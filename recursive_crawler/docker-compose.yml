@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: bd_gov_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: bd_gov_db
+    ports:
+      - "5432:5432"
+    volumes:
+      # This is the magic line that saves your data!
+      # It maps a folder named 'db_data' on your computer 
+      # to the internal Postgres storage inside the container.
+      - ./db_data:/var/lib/postgresql/data
