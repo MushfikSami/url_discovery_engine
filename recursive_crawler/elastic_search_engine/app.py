@@ -95,6 +95,7 @@ Observation: No relevant government documents found for this exact query.
 Thought: I have searched for this information, but the observation shows no relevant documents exist in the database. I will use the escape hatch and inform the user.
 Final Answer: দুঃখিত, আমার বর্তমান ডাটাবেসে চাঁদে জমি ক্রয় সংক্রান্ত কোনো সরকারি নীতিমালা বা তথ্য সংরক্ষিত নেই।
 """
+
 # ==========================================
 # 3. CORE RAG FUNCTIONS
 # ==========================================
@@ -158,10 +159,8 @@ def retrieve_context(query_text, query_vector, top_k=5):
 # 4. AGENTIC CHATBOT LOGIC
 # ==========================================
 
-MAX_HOPS = 5
-
 async def chat_interface(user_message, history):
-    """The Asynchronous Multi-Hop Agent orchestrator."""
+    """The Asynchronous Autonomous Multi-Hop Agent orchestrator."""
     
     # 1. Initialize System Prompt
     messages = [{"role": "system", "content": MASTER_SYSTEM_PROMPT}]
@@ -200,12 +199,23 @@ async def chat_interface(user_message, history):
     # 3. Add the current user message
     messages.append({"role": "user", "content": user_message})
 
-    current_display = "🧠 **Agent initialized. Analyzing query...**\n\n"
+    current_display = "🧠 **Autonomous Agent initialized. Analyzing query...**\n\n"
     yield current_display
     
     collected_sources = set()
 
-    for hop in range(MAX_HOPS):
+    # --- AUTONOMOUS STATE VARIABLES ---
+    is_resolved = False
+    executed_actions = set() # Memory to prevent infinite repetitive loops
+    safety_breaker = 0 # Ultimate server safeguard
+
+    # --- THE AUTONOMOUS LOOP ---
+    while not is_resolved:
+        safety_breaker += 1
+        if safety_breaker > 15:
+            yield current_display + "\n⚠️ **System Failsafe Triggered: Agent exceeded safe computation limits.**"
+            break
+
         try:
             # ---> CRITICAL: AWAIT THE ASYNC STREAM <---
             stream = await vllm_client.chat.completions.create(
@@ -228,9 +238,10 @@ async def chat_interface(user_message, history):
             current_display += agent_output + "\n\n"
             
             # Guardrail Check
-            if "দুঃখিত, সরকারি নীতিমালার আওতায়" in agent_output:
+            if "দুঃখিত, সরকারি নীতিমালার আওতায়" in agent_output:
                 yield current_display + "\n🛑 **GUARDRAIL TRIGGERED**"
-                return
+                is_resolved = True
+                continue
 
             # Final Answer Check
             if re.search(r"(?i)\**final answer:?\**|\**উত্তর:\**", agent_output):
@@ -238,52 +249,61 @@ async def chat_interface(user_message, history):
                     source_block = "\n\n**Sources:**\n" + "\n".join(list(collected_sources))
                     current_display += source_block
                 yield current_display
-                return
+                is_resolved = True
+                continue
 
             # Tool Interceptor
             action_match = re.search(r"Action:\s*(\w+)\([\'\"]?(.*?)[\'\"]?\)", agent_output)
             if action_match:
                 tool_name = action_match.group(1)
                 search_query = action_match.group(2)
+                full_action_string = action_match.group(0).lower()
                 
                 current_display += f"🔍 *Executing {tool_name} for: \"{search_query}\"*...\n"
                 yield current_display
                 
-                if tool_name in ["hybrid_search", "vector_search", "search", "exact_keyword_search","lexical_search"]:
-                    # ---> CRITICAL: QUARANTINE SYNCHRONOUS CALLS TO SEPARATE THREADS <---
-                    query_vector = await asyncio.to_thread(get_query_embedding, search_query)
-                    obs_text, new_sources = await asyncio.to_thread(retrieve_context, search_query, query_vector)
-                    
-                    collected_sources.update(new_sources)
-                    if not obs_text.strip():
-                        obs_text = "No relevant government documents found for this exact query. Try a different search term."
-                
-                elif tool_name == "no_tool_needed":
-                    obs_text = "No search required. Proceed to answer."
+                # --- REPETITION DETECTION ---
+                if full_action_string in executed_actions:
+                    obs_text = "System Warning: You just executed this exact search. Do not repeat failed searches. Use completely different keywords or output 'Final Answer:' stating the data is unavailable."
                 else:
-                    obs_text = f"Error: Tool '{tool_name}' not recognized."
+                    executed_actions.add(full_action_string)
+
+                    if tool_name in ["hybrid_search", "vector_search", "search", "exact_keyword_search","lexical_search"]:
+                        # ---> CRITICAL: QUARANTINE SYNCHRONOUS CALLS TO SEPARATE THREADS <---
+                        query_vector = await asyncio.to_thread(get_query_embedding, search_query)
+                        obs_text, new_sources = await asyncio.to_thread(retrieve_context, search_query, query_vector)
+                        
+                        collected_sources.update(new_sources)
+                        if not obs_text.strip():
+                            obs_text = "No relevant government documents found for this exact query. Try a different search term."
+                    
+                    elif tool_name == "no_tool_needed":
+                        obs_text = "No search required. Proceed to answer."
+                    else:
+                        obs_text = f"Error: Tool '{tool_name}' not recognized."
                     
                 current_display += f"📄 *Observation retrieved. Feeding back to AI...*\n\n"
                 yield current_display
                 
                 messages.append({"role": "assistant", "content": agent_output})
-                messages.append({"role": "user", "content": f"Observation: {obs_text}\n\nIf you have the answer, output 'Final Answer:'. If not, use another Action."})
+                messages.append({"role": "user", "content": f"Observation: {obs_text}\n\nIf you have the answer, output 'Final Answer:'. If not, expand your query and use another Action."})
             else:
                 messages.append({"role": "assistant", "content": agent_output})
                 messages.append({"role": "user", "content": "System Error: You must format your response with exactly 'Action: tool_name(\"query\")' or 'Final Answer:'."})
 
         except Exception as e:
             yield current_display + f"\n❌ **Agent Loop Error:** {str(e)}"
-            return
+            is_resolved = True
 
-    yield current_display + f"\n⚠️ **Agent timed out after maximum research hops ({MAX_HOPS}/{MAX_HOPS}).**"# ==========================================
+
+# ==========================================
 # 5. LAUNCH UI
 # ==========================================
 
 demo = gr.ChatInterface(
     fn=chat_interface,
-    title="Bangladesh Govt Services AI (Agentic)",
-    description="Ask complex questions. The AI will reason step-by-step, utilize search tools, and combine multiple sources to give a formal Bengali response.",
+    title="Bangladesh Govt Services AI (Autonomous Agent)",
+    description="Ask complex questions. The AI will reason step-by-step, utilize search tools, prevent repetitive loops, and combine multiple sources to give a formal Bengali response.",
 )
 
 if __name__ == "__main__":
