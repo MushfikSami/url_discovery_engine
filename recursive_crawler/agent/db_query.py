@@ -7,10 +7,12 @@ DB_PASS = "password"
 DB_NAME = "bd_gov_db"        
 DB_HOST = "127.0.0.1"
 DB_PORT = 5432 
+OUTPUT_FILE = "output.txt"
 # ----------------------------------------------- #
 
 async def fetch_top_5():
-    print("[*] Connecting to PostgreSQL...")
+    print(f"[*] Connecting to PostgreSQL and saving output to {OUTPUT_FILE}...")
+    
     conn = await asyncpg.connect(
         user=DB_USER, 
         password=DB_PASS, 
@@ -19,25 +21,24 @@ async def fetch_top_5():
         port=DB_PORT
     )
     
-    # The SQL query: Select all columns (*), limit to 5 rows
-    query = "SELECT * FROM websites LIMIT 5;"
-    
+    query = "SELECT SUMMARY FROM websites where URL='https://mail.crwt.gov.bd';"
     records = await conn.fetch(query)
     
-    print(f"[*] Successfully fetched {len(records)} rows.\n")
-    
-    for i, record in enumerate(records, 1):
-        print(f"=== Row {i} ===")
-        # Loop through every column and print its value
-        for key, value in record.items():
-            str_val = str(value)
-            # Truncate massive text blocks so your terminal remains readable
-            if len(str_val) > 150:
-                str_val = str_val[:150] + "... [TRUNCATED]"
-            print(f"{key.upper()}: {str_val}")
-        print("-" * 40)
+    # Open the file for writing ('w' overwrites, 'a' appends)
+    with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+        f.write(f"[*] Successfully fetched {len(records)} rows.\n\n")
+        
+        for i, record in enumerate(records, 1):
+            f.write(f"=== Row {i} ===\n")
+            for key, value in record.items():
+                str_val = str(value)
+                
+                # Write to file instead of printing to console
+                f.write(f"{key.upper()}: {str_val}\n")
+            f.write("-" * 40 + "\n")
             
     await conn.close()
+    print("[*] Done!")
 
 if __name__ == "__main__":
     asyncio.run(fetch_top_5())

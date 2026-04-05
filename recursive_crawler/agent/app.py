@@ -9,11 +9,75 @@ from rank_bm25 import BM25Okapi
 vllm_client = AsyncOpenAI(base_url="http://localhost:5000/v1", api_key="no-key")
 MODEL_NAME = "qwen35"
 TREE_PATH = "../PageIndex/results/bd_gov_ecosystem_structure.json" 
-MAX_RETRIES = 2 # The agent will try up to 2 different search strategies
+MAX_HOPS = 5 # The agent can try up to 5 times to find the answer
 # ----------------------------------------------- #
 
 # ==========================================
-# 1. Utilities & Initialization
+# 1. MASTER SYSTEM PROMPT
+# ==========================================
+
+MASTER_SYSTEM_PROMPT = """
+You are the Official Digital AI Assistant for the Government of Bangladesh. Your absolute priority is to provide accurate, official information to citizens by reasoning through complex queries and using your available search tools to retrieve verified data from the official government tree-index.
+
+--- STRICT GUARDRAILS (CRITICAL) ---
+You must evaluate every user query against the following safety protocols BEFORE taking any action or generating any thought.
+You MUST IMMEDIATELY REJECT any query that involves, asks for, or implies:
+1. Self-sabotage, self-harm, or suicide.
+2. Sabotage, destruction, or vandalism of state, private, or public property.
+3. Terrorism, violence, or illegal activities.
+4. Unethical manipulation, bypassing, or hacking of government systems, portals, or laws.
+If a query violates ANY of these rules, you must abort all tool usage and output EXACTLY and ONLY this phrase:
+"দুঃখিত, সরকারি নীতিমালার আওতায় এ ধরনের ক্ষতিকর, বেআইনি বা অনৈতিক তথ্য প্রদান করা সম্পূর্ণ নিষিদ্ধ।"
+
+--- LINGUISTIC RULES ---
+1. OUTPUT LANGUAGE: You must communicate EXCLUSIVELY in highly formal, official Bengali (শুদ্ধ ও আনুষ্ঠানিক বাংলা).
+2. NO COLLOQUIALISMS: Do not use regional dialects, slang, or informal phrasing.
+3. TONE: Maintain a respectful, bureaucratic, highly objective, and empathetic tone.
+
+--- TOOL REPOSITORY ---
+You have access to the following tool to find information from the local tree database:
+- `search_tree(query: str)`: Searches the hierarchical government database. If your first search fails, use this tool again with BROADER or alternative Bengali keywords (Query Expansion).
+
+--- REASONING FRAMEWORK & CHAIN OF THOUGHT ---
+You are a Multi-Hop Reasoning Agent. You investigate questions step-by-step using the ReAct (Reason + Act) methodology. 
+
+If you NEED to search for information, you MUST output:
+Thought: [Analyze the query. Formulate the best search terms in Bengali.]
+Action: [The exact tool name and query, e.g., search_tree("your search terms")]
+Observation: [WAIT for the system to provide results. Do not write this yourself.]
+
+CRITICAL ESCAPE HATCH: If you have searched 2 or 3 times using different variations of the keywords and the information is clearly missing, DO NOT keep searching endlessly. Accept that the data is unavailable.
+
+If you ALREADY HAVE the necessary information, OR if you realize the data is missing after trying to search, DO NOT output an Action. You must IMMEDIATELY output:
+Final Answer: [Your strictly formal Bengali response based ONLY on the observations. If data is missing, politely explain that it is not in the system's database.]
+
+--- EXAMPLES ---
+
+Example 1: Successful multi-hop retrieval
+User: [A complex question asking for two distinct pieces of information, e.g., Concept A and Concept B]
+Thought: The user is asking about [Concept A] and [Concept B]. I need to find information on both. First, I will search for [Concept A].
+Action: search_tree("[Search query for Concept A]")
+Observation: [System returns relevant text about Concept A...]
+Thought: I have found the information for [Concept A]. Now I need to find information for [Concept B].
+Action: search_tree("[Search query for Concept B]")
+Observation: [System returns relevant text about Concept B...]
+Thought: I have successfully retrieved all necessary data. I will now format the final answer in formal Bengali.
+Final Answer: [A highly formal, official Bengali response synthesizing the findings about Concept A and Concept B based strictly on the observations.]
+
+Example 2: Triggering the Escape Hatch when data is missing
+User: [A question about a specific, possibly non-existent policy or service]
+Thought: I need to search the database for rules regarding [Specific Policy/Service].
+Action: search_tree("[Highly specific search query]")
+Observation: No relevant documents found in the local tree index.
+Thought: The first search yielded no results. I will broaden my search terms to see if the information falls under a wider category.
+Action: search_tree("[Broader alternative search query]")
+Observation: No relevant documents found in the local tree index.
+Thought: I have searched multiple times using different keyword variations, but the observation shows no relevant documents exist in the database. I will use the escape hatch and inform the user.
+Final Answer: দুঃখিত, আমার বর্তমান ডাটাবেসে এই নির্দিষ্ট বিষয়ের কোনো সরকারি নীতিমালা বা তথ্য সংরক্ষিত নেই।
+"""
+
+# ==========================================
+# 2. Utilities & Index Initialization
 # ==========================================
 def flatten_tree(nodes_list):
     flat_list = []
@@ -77,7 +141,45 @@ except Exception as e:
     bm25 = None
 
 # ==========================================
-# 2. Master QA Bot (Self-Reflection RAG)
+# 3. Tool Logic: Search & Dynamic Chunking
+# ==========================================
+def execute_tree_search(query):
+    """The tool called by the LLM. Uses BM25 to find top nodes and dynamically chunks the text."""
+    if not bm25 or not toc:
+        return "Database not loaded properly."
+
+    tokenized_query = tokenize(query)
+    
+    # 1. Broad Node Retrieval (Top 5)
+    top_nodes = bm25.get_top_n(tokenized_query, toc, n=5)
+    if not top_nodes:
+        return "No relevant documents found in the local tree index."
+
+    selected_ids = [n['node_id'] for n in top_nodes]
+    
+    # 2. Extract Full Text
+    raw_full_texts = []
+    for node in all_nodes:
+        if str(node.get('node_id', '')) in selected_ids:
+            raw_full_texts.append(f"Source: {node.get('title', 'Unknown')}\n{node.get('text', '')}")
+            
+    combined_raw_text = "\n\n".join(raw_full_texts)
+    
+    # 3. Dynamic Chunking (Prevents context overflow)
+    text_chunks = chunk_text(combined_raw_text, chunk_size=2000, overlap=300)
+    
+    if len(text_chunks) > 3:
+        chunk_corpus = [tokenize(chunk) for chunk in text_chunks]
+        chunk_bm25 = BM25Okapi(chunk_corpus)
+        best_chunks = chunk_bm25.get_top_n(tokenized_query, text_chunks, n=3)
+        final_context = "\n\n...[text omitted]...\n\n".join(best_chunks)
+    else:
+        final_context = combined_raw_text
+
+    return final_context
+
+# ==========================================
+# 4. Master QA Bot (ReAct Agent Loop)
 # ==========================================
 async def process_query(message, history):
     
@@ -85,197 +187,121 @@ async def process_query(message, history):
         yield "❌ **Error:** Database not loaded properly."
         return
 
-    previous_failed_queries = []
+    # 1. Initialize System Prompt
+    messages = [{"role": "system", "content": MASTER_SYSTEM_PROMPT}]
+    
+    # 2. Add Sanitized Chat History
+    for item in history[-6:]: 
+        role = ""
+        content = ""
+        if isinstance(item, dict):
+            role = item.get("role", "user")
+            content = str(item.get("content", ""))
+        elif isinstance(item, (list, tuple)) and len(item) >= 2:
+            user_text = str(item[0] or "")
+            ai_text = str(item[1] or "")
+            if "**উত্তর:**" in ai_text: ai_text = ai_text.split("**উত্তর:**")[-1].strip()
+            elif "Final Answer:" in ai_text: ai_text = ai_text.split("Final Answer:")[-1].strip()
+            messages.append({"role": "user", "content": user_text})
+            messages.append({"role": "assistant", "content": ai_text})
+            continue
 
-    # --- THE AGENTIC LOOP ---
-    for attempt in range(1, MAX_RETRIES + 1):
-        if attempt > 1:
-            yield f"🔄 **Self-Reflection Triggered (Attempt {attempt}/{MAX_RETRIES})!**\n*Attempt {attempt-1} failed to find the exact answer. Broadening search parameters...*"
-        else:
-            yield "🧠 **Stage -1: Query Expansion...**\n*Translating your intent into official search terms...*"
-        
-        # Adaptive Prompt: Changes based on whether it's the first try or a retry
-        if attempt == 1:
-            expansion_prompt = f"""
-            SYSTEM: You are an expert search query generator for the Bangladesh Government web ecosystem.
-            User's original query: "{message}"
-            
-            CRITICAL INSTRUCTIONS:
-            1. Understand the core intent of the user's messy or informal query.
-            2. Rewrite the query into 3 distinct, highly professional Bengali search phrases.
-            3. Include official government terms and correct spelling.
-            4. Respond STRICTLY in JSON format as a list of strings.
-            """
-        else:
-            expansion_prompt = f"""
-            SYSTEM: You are an expert search query generator for the Bangladesh Government web ecosystem.
-            User's original query: "{message}"
-            
-            PREVIOUS FAILED SEARCHES: {previous_failed_queries}
-            
-            CRITICAL INSTRUCTIONS:
-            1. The previous search terms FAILED to find the answer.
-            2. You must BROADEN the scope. Think of higher-level ministries, alternative synonyms, or broader categories.
-            3. Generate 3 COMPLETELY DIFFERENT professional Bengali search phrases.
-            4. Respond STRICTLY in JSON format as a list of strings.
-            """
-        
+        if role == "assistant":
+            if "**উত্তর:**" in content: content = content.split("**উত্তর:**")[-1].strip()
+            elif "Final Answer:" in content: content = content.split("Final Answer:")[-1].strip()
+        if content:
+            messages.append({"role": role, "content": content})
+
+    messages.append({"role": "user", "content": message})
+
+    current_display = "🧠 **Autonomous Tree Agent initialized...**\n\n"
+    yield current_display
+    
+    # --- AUTONOMOUS STATE VARIABLES ---
+    is_resolved = False
+    executed_actions = set() # Memory to prevent infinite repetitive loops
+    safety_breaker = 0 # Ultimate server safeguard (not a hop limit)
+
+    # --- THE AUTONOMOUS LOOP ---
+    while not is_resolved:
+        safety_breaker += 1
+        if safety_breaker > 15:
+            yield current_display + "\n⚠️ **System Failsafe Triggered: Agent exceeded safe computation limits.**"
+            break
+
         try:
-            exp_response = await vllm_client.chat.completions.create(
+            stream = await vllm_client.chat.completions.create(
                 model=MODEL_NAME,
-                messages=[{"role": "user", "content": expansion_prompt}],
-                temperature=0.4, # Slightly higher temp for better brainstorming on retries
-                response_format={"type": "json_object"}
+                messages=messages,
+                max_tokens=4096,
+                temperature=0.2, 
+                stream=True,
+                stop=["Observation:"]
             )
             
-            raw_exp = json.loads(exp_response.choices[0].message.content)
+            agent_output = ""
+            async for chunk in stream:
+                if chunk.choices[0].delta.content is not None:
+                    text_chunk = chunk.choices[0].delta.content
+                    agent_output += text_chunk
+                    yield current_display + agent_output
             
-            expanded_queries = []
-            if isinstance(raw_exp, dict):
-                values = list(raw_exp.values())
-                if len(values) > 0: expanded_queries = values[0]
-            elif isinstance(raw_exp, list):
-                expanded_queries = raw_exp
+            current_display += agent_output + "\n\n"
+            
+            # Guardrail Check
+            if "দুঃখিত, সরকারি নীতিমালার আওতায়" in agent_output:
+                yield current_display + "\n🛑 **GUARDRAIL TRIGGERED**"
+                is_resolved = True
+                continue
+
+            # Resolution Check (Success or Graceful Failure)
+            if re.search(r"(?i)\**Final Answer:\**|\**উত্তর:\**", agent_output):
+                is_resolved = True
+                yield current_display
+                continue
+
+            # Action Interceptor
+            action_match = re.search(r"Action:\s*(\w+)\([\'\"]?(.*?)[\'\"]?\)", agent_output)
+            if action_match:
+                tool_name = action_match.group(1)
+                search_query = action_match.group(2)
+                full_action_string = action_match.group(0).lower()
                 
-            if not isinstance(expanded_queries, list): expanded_queries = [str(expanded_queries)]
-        except Exception as e:
-            expanded_queries = []
-            
-        expanded_queries.append(message)
-        expanded_queries = list(set(expanded_queries))
-        
-        # Save these in case we need to retry again
-        previous_failed_queries.extend(expanded_queries)
-        
-        yield f"🧠 **Stage -1 Complete (Attempt {attempt})!**\n*Searching for variations: {expanded_queries}*\n\n⚡ **Stage 0: BM25 Pre-Filtering...**"
-
-        # --- STAGE 0: MULTI-BM25 PRE-FILTERING ---
-        top_indices_set = set()
-        for query_variant in expanded_queries:
-            tokenized_query = tokenize(query_variant)
-            indices = bm25.get_top_n(tokenized_query, range(len(toc)), n=10)
-            top_indices_set.update(indices)
-        
-        combined_top_indices = list(top_indices_set)[:25]
-        
-        filtered_toc = [toc[i] for i in combined_top_indices]
-        filtered_toc_json = json.dumps(filtered_toc, ensure_ascii=False, indent=2)
-
-        # --- PHASE 1: LOCAL REASONING ---
-        yield f"⚡ **Stage 0 Complete!** BM25 isolated top matches.\n\n🔍 **Phase 1: AI Reasoning...**\n*Evaluating documents...*"
-
-        reasoning_prompt = f"""
-            SYSTEM: You are an intelligent routing agent navigating a hierarchical Table of Contents for Bangladesh Government Services.
-            
-            CRITICAL INSTRUCTIONS:
-            1. Read the User Query in Bengali and understand its core intent.
-            2. Identify the 'node_id's of the sections most logically related to the query.
-            3. BE FLEXIBLE: Look for conceptual matches.
-            
-            Filtered Tree Index:
-            {filtered_toc_json}
-            
-            User Query: "{message}"
-            
-            Respond STRICTLY in JSON format as a list of strings containing the best 1 to 3 node_ids.
-            """
-        
-        try:
-            response = await vllm_client.chat.completions.create(
-                model=MODEL_NAME,
-                messages=[{"role": "user", "content": reasoning_prompt}],
-                temperature=0.0,
-                response_format={"type": "json_object"}
-            )
-            
-            raw_result = json.loads(response.choices[0].message.content)
-            
-            selected_ids = []
-            if isinstance(raw_result, dict):
-                values = list(raw_result.values())
-                if len(values) > 0: selected_ids = values[0]
-            elif isinstance(raw_result, list):
-                selected_ids = raw_result
+                current_display += f"🌳 *Searching Tree for: \"{search_query}\"*...\n"
+                yield current_display
                 
-            if not isinstance(selected_ids, list): selected_ids = [str(selected_ids)] if selected_ids else []
-            
-            # If Reasoning fails to find a node, loop to next attempt
-            if not selected_ids:
-                 if attempt < MAX_RETRIES:
-                     continue # Jump back to the top of the loop and broaden search
-                 else:
-                     yield "❌ **Final Attempt Complete!**\n*No relevant local nodes found after multiple strategies.*\n\n**Response:**\nআমি দুঃখিত, আমার কাছে এই তথ্য নেই। (I am sorry, I do not have this information in my local database.)"
-                     return
-
-            # --- STAGE 1.5: DYNAMIC CONTEXT WINDOWING ---
-            yield f"🔍 **Phase 1 Complete!**\n*Routed to nodes: {selected_ids}*\n\n✂️ **Stage 1.5: Dynamic Chunking...**"        
-            
-            raw_full_texts = []
-            for node in all_nodes:
-                if str(node.get('node_id', '')) in selected_ids:
-                    raw_full_texts.append(f"Source: {node.get('title', 'Unknown')}\n{node.get('text', '')}")
-                    
-            combined_raw_text = "\n\n".join(raw_full_texts)
-            text_chunks = chunk_text(combined_raw_text, chunk_size=2000, overlap=300)
-            
-            if len(text_chunks) > 3:
-                chunk_corpus = [tokenize(chunk) for chunk in text_chunks]
-                chunk_bm25 = BM25Okapi(chunk_corpus)
-                tokenized_orig_query = tokenize(message)
-                best_chunks = chunk_bm25.get_top_n(tokenized_orig_query, text_chunks, n=3)
-                final_context = "\n\n...[text omitted]...\n\n".join(best_chunks)
-            else:
-                final_context = combined_raw_text
-
-            yield "✂️ **Stage 1.5 Complete!**\n\n⚙️ **Phase 2: Generating Bengali response...**"
-            
-            # --- PHASE 2: LOCAL GENERATION ---
-            answer_prompt = f"""
-            SYSTEM: You are a highly accurate official assistant for the Government of Bangladesh.
-            
-            CRITICAL INSTRUCTIONS:
-            1. Read the Context provided below carefully.
-            2. If the context contains the answer OR highly relevant partial information, synthesize it STRICTLY in Bengali (বাংলা).
-            3. If the Context is completely blank or 100% irrelevant to the question, output exactly: "[NOT_FOUND]" and nothing else.
-            4. Do NOT provide general advice without local context, do NOT hallucinate links.
-            
-            Context:
-            {final_context}
-            
-            User Query: {message}
-            Response:
-            """
-            
-            final_answer = await vllm_client.chat.completions.create(
-                model=MODEL_NAME,
-                messages=[{"role": "user", "content": answer_prompt}],
-                temperature=0.1
-            )
-            
-            result_text = final_answer.choices[0].message.content.strip()
-            
-            # Check if generation phase realized the context was bad
-            if "[NOT_FOUND]" in result_text:
-                if attempt < MAX_RETRIES:
-                    continue # Try again!
+                # --- REPETITION DETECTION (The alternative to max_hops) ---
+                if full_action_string in executed_actions:
+                    obs_text = "System Warning: You just executed this exact search. Do not repeat failed searches. Use completely different keywords or output 'Final Answer:' stating the data is unavailable."
                 else:
-                    yield "❌ **Final Attempt Complete!**\n*Found related documents, but they didn't contain the specific answer.*\n\n**Response:**\nআমি দুঃখিত, আমার কাছে এই নির্দিষ্ট তথ্যটি নেই।"
-                    return
+                    executed_actions.add(full_action_string)
+                    
+                    if tool_name in ["search_tree", "search", "hybrid_search"]:
+                        obs_text = await asyncio.to_thread(execute_tree_search, search_query)
+                    else:
+                        obs_text = f"Error: Tool '{tool_name}' not recognized. Please use 'search_tree'."
+                    
+                current_display += f"📄 *Tree nodes retrieved. Feeding back to AI...*\n\n"
+                yield current_display
+                
+                messages.append({"role": "assistant", "content": agent_output})
+                messages.append({"role": "user", "content": f"Observation: {obs_text}\n\nIf you have the answer, output 'Final Answer:'. If not, expand your query and use another Action."})
             
-            yield f"**[Local Database Answer]**\n*Selected Nodes:* `{selected_ids}` (Found on Attempt {attempt})\n\n---\n\n{result_text}"
-            return # Success! Break out of the loop.
-            
-        except Exception as e:
-            yield f"❌ **Error occurred on Attempt {attempt}:**\n{str(e)}"
-            if attempt == MAX_RETRIES: return
+            else:
+                # Formatting Failsafe
+                messages.append({"role": "assistant", "content": agent_output})
+                messages.append({"role": "user", "content": "System Error: You must format your response with exactly 'Action: tool_name(\"query\")' or 'Final Answer:'."})
 
+        except Exception as e:
+            yield current_display + f"\n❌ **Agent Loop Error:** {str(e)}"
+            is_resolved = True
 # ==========================================
-# 3. Launch App
+# 5. Launch App
 # ==========================================
 demo = gr.ChatInterface(
     fn=process_query,
-    title="🇧🇩 BD Gov Discovery Engine (Agentic Retry)",
-    description="Ask questions about Bangladesh Government services. Features **Self-Reflection**. If it fails to find an answer initially, it will dynamically rewrite its own search strategy and try again.",
+    title="🌳 BD Gov Discovery Engine (ReAct Agent)",
+    description="Ask questions about Bangladesh Government services. The AI navigates a hierarchical Tree Index and uses ReAct prompting to dynamically expand its searches.",
     examples=["খতিয়ান (ই-পর্চা) তোলার নিয়ম কি?", "প্রাথমিক শিক্ষা অধিদপ্তরের বদলি নীতিমালা কি?", "বাঘাইছড়ি উপজেলার পর্যটন কেন্দ্রগুলো কী কী?"],
     fill_height=True
 )
