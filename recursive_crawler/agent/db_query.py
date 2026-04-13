@@ -4,7 +4,7 @@ import asyncpg
 # ---------------- CONFIGURATION ---------------- #
 DB_USER = "postgres"         
 DB_PASS = "password"         
-DB_NAME = "bd_gov_db"        
+DB_NAME = "banglapedia_db"        
 DB_HOST = "127.0.0.1"
 DB_PORT = 5432 
 OUTPUT_FILE = "output.txt"
@@ -21,7 +21,7 @@ async def fetch_top_5():
         port=DB_PORT
     )
     
-    query = "SELECT * FROM websites where URL='https://mail.crwt.gov.bd';"
+    query = "SELECT count(*) FROM banglapedia_pages where status='success';"
     records = await conn.fetch(query)
     
     # Open the file for writing ('w' overwrites, 'a' appends)
