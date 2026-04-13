@@ -9,33 +9,25 @@ INDEX_NAME = "bd_gov_chunks"
 # Lexical search for Freedom Fighter Certificate/Gazette Name Correction
 # Lexical search for Guardianship vs Adoption
 # Lexical search for District Level NICU/SCANU facilities
+# Lexical search for Freedom Fighter Certificate/Gazette Name Correction
 search_query = {
     "query": {
         "bool": {
             "must": [
-                # The chunk MUST contain at least one of these exact medical terms
-                {
-                    "bool": {
-                        "should": [
-                            {"match": {"chunk_text": "এনআইসিইউ"}},
-                            {"match": {"chunk_text": "NICU"}},
-                            {"match": {"chunk_text": "স্ক্যানো"}},      # SCANU
-                            {"match": {"chunk_text": "SCANU"}},
-                            {"match_phrase": {"chunk_text": "নিবিড় পরিচর্যা"}} # Intensive Care
-                        ],
-                        "minimum_should_match": 1
-                    }
-                }
+                # The chunk MUST be related to Freedom Fighters
+                {"match": {"chunk_text": "মুক্তিযোদ্ধা"}} 
             ],
             "should": [
-                # Context words to pinpoint "District Level Hospitals for Children"
-                {"match": {"chunk_text": "জেলা"}},         # District
-                {"match": {"chunk_text": "সদর"}},         # Sadar (District hospitals are usually 'Sadar Hospitals')
-                {"match": {"chunk_text": "হাসপাতাল"}},    # Hospital
-                {"match": {"chunk_text": "শিশু"}},         # Child
-                {"match": {"chunk_text": "নবজাতক"}}       # Newborn
+                # Context words for name correction
+                {"match": {"chunk_text": "সংশোধন"}},    # Correction
+                {"match": {"chunk_text": "নাম"}},       # Name
+                {"match": {"chunk_text": "ভুল"}},       # Mistake/Error
+                {"match": {"chunk_text": "সনদ"}},       # Certificate
+                {"match": {"chunk_text": "গেজেট"}},     # Gazette
+                {"match": {"chunk_text": "আবেদন"}},     # Application
+                {"match": {"chunk_text": "ফরম"}}        # Form
             ],
-            "minimum_should_match": 2 # Must match at least 2 context words
+            "minimum_should_match": 3 # Stricter matching: Must contain at least 3 of the context words to filter out generic lists of freedom fighters
         }
     },
     "size": 5, 

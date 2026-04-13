@@ -7,7 +7,7 @@ from openai import AsyncOpenAI
 
 # Custom Module Imports
 from config import MASTER_SYSTEM_PROMPT, MODEL_NAME, VLLM_URL
-from es_engine import get_query_embedding, retrieve_context # Exposing for external evaluation scripts
+from es_engine import get_query_embedding, retrieve_context
 
 vllm_client = AsyncOpenAI(api_key="no-key", base_url=VLLM_URL)
 

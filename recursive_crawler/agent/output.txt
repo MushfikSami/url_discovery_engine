@@ -1,5 +1,27 @@
 [*] Successfully fetched 1 rows.
 
 === Row 1 ===
+URL: https://mail.crwt.gov.bd
 SUMMARY: এই ওয়েবসাইটটি ক্রিটিক্যাল রিসোর্স ওয়েব ট্রান্সফার (CRWT) বা সংশ্লিষ্ট সরকারি সংস্থার ইমেইল পোর্টাল। এটি জিম্বরা (Zimbra) ওয়েব অ্যাপ্লিকেশন ব্যবহার করে তৈরি করা হয়েছে। ব্যবহারকারীরা এখানে তাদের ইউজারনেম এবং পাসওয়ার্ড দিয়ে সাইন ইন করতে পারেন। এখানে মডার্ন এবং ক্লাসিক উভয় ধরনের ইন্টারফেসের অপশন রয়েছে। এই পোর্টালটি মূলত সরকারি কর্মকর্তা বা সংশ্লিষ্ট ব্যক্তিদের জন্য ইমেইল যোগাযোগের মাধ্যম। এটি বিভিন্ন ডিভাইসে রেসপন্সিভ অভিজ্ঞতা প্রদান করে। কপিরাইট তথ্য থেকে বোঝা যায় এটি ২০০৫ থেকে ২০২৫ সাল পর্যন্ত সিনকর ইনক কর্তৃক পরিচালিত। এটি একটি নিরাপদ এবং অফিসিয়াল যোগাযোগ মাধ্যম হিসেবে কাজ করে।
+KEYWORDS: ["ইমেইল", "জিম্বরা", "সরকারি", "পোর্টাল", "যোগাযোগ", "সাইন ইন", "CRWT", "অফিসিয়াল", "ওয়েব অ্যাপ", "বাংলাদেশ"]
+RAW_MARKDOWN: [Zimbra ](http://bcc.gov.bd "Zimbra")
+Sign In
+Username Password [Forgot Password?](https://mail.crwt.gov.bd/)
+Show Hide
+Sign In
+Stay signed in
+* * *
+Web App Version
+Default Classic Modern
+×
+**Modern**  
+The Modern Web App delivers a responsive experience across all your devices and integrates with many popular apps.
+**Classic**  
+The Classic Web App is familiar to long-time Zimbra users. It delivers advanced collaboration and calendar features popular with power users on Desktop web browsers.
+**Default**  
+This will sign you in according to your saved Preference. In the Modern Web App, set this preference in Settings > General > Zimbra Version. In Classic, set it in Preferences > General > Sign In.
+Copyright © 2005-2025 Synacor, Inc. All rights reserved. "Zimbra" is a registered trademark of Synacor, Inc.
+
+STATUS: success
+PROCESSED_AT: 2026-03-16 15:56:23.150951
 ----------------------------------------

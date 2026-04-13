@@ -21,7 +21,7 @@ async def fetch_top_5():
         port=DB_PORT
     )
     
-    query = "SELECT SUMMARY FROM websites where URL='https://mail.crwt.gov.bd';"
+    query = "SELECT * FROM websites where URL='https://mail.crwt.gov.bd';"
     records = await conn.fetch(query)
     
     # Open the file for writing ('w' overwrites, 'a' appends)

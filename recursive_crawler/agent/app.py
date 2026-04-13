@@ -5,10 +5,16 @@ import gradio as gr
 from openai import AsyncOpenAI
 
 # Custom Module Imports
-from config import MASTER_SYSTEM_PROMPT, MODEL_NAME
-from utils import tokenize, chunk_text # Kept here for backward compatibility with Eval scripts
-from tree_index import execute_tree_search, bm25, toc, all_nodes # Kept here for Eval scripts
-
+# --- Replace your current local imports with this ---
+try:
+    from agent.config import MASTER_SYSTEM_PROMPT, MODEL_NAME
+    from agent.utils import tokenize, chunk_text 
+    from agent.tree_index import execute_tree_search, bm25, toc, all_nodes 
+except ModuleNotFoundError:
+    from config import MASTER_SYSTEM_PROMPT, MODEL_NAME
+    from utils import tokenize, chunk_text 
+    from tree_index import execute_tree_search, bm25, toc, all_nodes 
+# ----------------------------------------------------
 vllm_client = AsyncOpenAI(base_url="http://localhost:5000/v1", api_key="no-key")
 
 async def process_query(message, history):

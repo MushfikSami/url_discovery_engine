@@ -12,7 +12,7 @@ from elasticsearch import Elasticsearch
 from rank_bm25 import BM25Okapi
 
 # Import your custom agent tools
-from elastic_search_engine.app import get_query_embedding
+from elastic_search_engine.es_engine import get_query_embedding,retrieve_context
 from agent.app import bm25, toc, tokenize, all_nodes, chunk_text
 
 # Import our modularized config and helpers
@@ -79,25 +79,19 @@ async def get_system_a_response(query: str):
                     executed_actions.add(full_action_string)
 
                     if tool_name in ["hybrid_search", "vector_search", "search", "exact_keyword_search", "lexical_search"]:
+                        
+                        # ১. ভেক্টর তৈরি
                         query_vector = await asyncio.to_thread(get_query_embedding, search_query)
                         
-                        search_body = {
-                            "knn": {"field": "chunk_vector", "query_vector": query_vector, "k": 5, "num_candidates": 50, "boost": 0.5},
-                            "query": {"match": {"chunk_text": {"query": search_query, "boost": 1.5}}},
-                            "size": 5,
-                            "_source": ["chunk_text"]
-                        }
+                        # ২. নতুন মডিউলার ফাংশন দিয়ে ডাটাবেস থেকে সার্চ 
+                        obs_text, new_sources = await asyncio.to_thread(retrieve_context, search_query, query_vector)
                         
-                        es_resp = await asyncio.to_thread(es.search, index=INDEX_NAME, body=search_body)
-                        hits = es_resp["hits"]["hits"]
-                        
-                        raw_chunks = [hit["_source"].get("chunk_text", "") for hit in hits]
-                        all_retrieved_chunks.extend(raw_chunks) 
-                        
-                        obs_text = "\n\n".join(raw_chunks)
-                        if not obs_text.strip():
-                            obs_text = "No relevant government documents found."
-                    
+                        # ৩. DeepEval এর জন্য চাংকগুলো সেভ করা
+                        if obs_text.strip():
+                            all_retrieved_chunks.append(obs_text)
+                        else:
+                            obs_text = "No relevant government documents found for this exact query. Try a different search term."
+                            
                     elif tool_name == "no_tool_needed":
                         obs_text = "No search required. Proceed to answer."
                     else:

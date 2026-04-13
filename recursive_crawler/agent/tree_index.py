@@ -1,9 +1,14 @@
 # tree_index.py
 import json
 from rank_bm25 import BM25Okapi
-from config import TREE_PATH
-from utils import flatten_tree, tokenize, chunk_text
-
+# --- Replace your current local imports with this ---
+try:
+    from agent.config import TREE_PATH
+    from agent.utils import flatten_tree, tokenize, chunk_text
+except ModuleNotFoundError:
+    from config import TREE_PATH
+    from utils import flatten_tree, tokenize, chunk_text
+# ----------------------------------------------------
 all_nodes = []
 toc = []
 bm25 = None

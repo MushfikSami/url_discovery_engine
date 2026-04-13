@@ -5,7 +5,14 @@ from elasticsearch import Elasticsearch
 import tritonclient.http as httpclient
 from transformers import AutoTokenizer
 
-from config import TRITON_URL, INDEX_NAME
+# --- Replace your current config import with this ---
+try:
+    # When imported from outside (DeepEval)
+    from elastic_search_engine.config import TRITON_URL, INDEX_NAME
+except ModuleNotFoundError:
+    # When run directly from inside this folder
+    from config import TRITON_URL, INDEX_NAME
+# ----------------------------------------------------
 
 # Connect to Triton Server
 try:
@@ -42,8 +49,8 @@ def get_query_embedding(text):
     return response.as_numpy("sentence_embedding")[0].tolist()
 
 
-def retrieve_context(query_text, query_vector, top_k=5):
-    """Searches Elasticsearch using HYBRID search (BM25 + k-NN)."""
+def retrieve_context(query_text, query_vector, top_k=4):
+    """Searches Elasticsearch using HYBRID search (Multi-Match + k-NN)."""
     search_query = {
         "knn": {
             "field": "chunk_vector",
@@ -53,16 +60,16 @@ def retrieve_context(query_text, query_vector, top_k=5):
             "boost": 0.5 
         },
         "query": {
-            "match": {
-                "chunk_text": {
-                    "query": query_text,
-                    "boost": 1.5 
-                }
+            "multi_match": {
+                "query": query_text,
+                # Boosting the summary and keywords fields to rank official definitions higher
+                "fields": ["summary^2", "keywords^1.5", "raw_markdown^1"]
             }
         },
         "size": top_k,
-        "_source": ["chunk_text", "url", "site_title"]
+        "_source": ["url", "summary", "raw_markdown"]
     }
+    
     try:
         response = es.search(index=INDEX_NAME, body=search_query)
         hits = response["hits"]["hits"]
@@ -70,17 +77,20 @@ def retrieve_context(query_text, query_vector, top_k=5):
         
         for hit in hits:
             source_data = hit["_source"]
-            contexts.append(source_data.get("chunk_text", ""))
-            
-            title = source_data.get("site_title", "").strip()
-            if not title or len(title) < 3 or "```" in title:
-                title = "Official BD Government Document"
-                
             url = source_data.get("url", "#")
+            summary = source_data.get("summary", "সারসংক্ষেপ পাওয়া যায়নি")
+            markdown = source_data.get("raw_markdown", "")
+            
+            # Format a structured context block for the LLM
+            # Truncating markdown to ~3000 chars to prevent context window overflow
+            context_block = f"Source URL: {url}\nSummary: {summary}\nContent Details:\n{markdown[:3000]}"
+            contexts.append(context_block)
+            
             if url != "#":
-                sources.append(f"- [{title}]({url})")
+                sources.append(f"- [{url}]({url})")
                 
-        return "\n\n".join(contexts), list(set(sources))
+        return "\n\n---\n\n".join(contexts), list(set(sources))
+        
     except Exception as e:
         print(f"[!] Elasticsearch Error: {e}")
         return "", []
