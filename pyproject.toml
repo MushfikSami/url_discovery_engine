@@ -1,0 +1,270 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "url_discovery_engine"
+version = "1.0.0"
+description = "Bangladesh Government Website Discovery & Search System"
+readme = "README.md"
+license = { text = "Internal - Government of Bangladesh" }
+authors = [
+    { name = "URL Discovery Engine Team" }
+]
+requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: Other/Proprietary License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Internet :: WWW/HTTP :: Indexing/Search",
+    "Topic :: Text Processing :: Linguistic",
+    "Typing :: Typed",
+]
+dependencies = [
+    # Core
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "python-dotenv>=1.0.0",
+    "pyyaml>=6.0.0",
+    "loguru>=0.7.0",
+
+    # Async HTTP & Crawling
+    "aiohttp>=3.9.0",
+    "beautifulsoup4>=4.12.0",
+    "crawl4ai>=0.1.0",
+    "httpx>=0.25.0",
+
+    # Database
+    "psycopg2-binary>=2.9.0",
+    "asyncpg>=0.29.0",
+
+    # Elasticsearch
+    "elasticsearch>=8.11.0",
+    "elasticsearch-helpers>=8.11.0",
+
+    # ML/LLM Integration
+    "openai>=1.0.0",
+    "rank-bm25>=0.2.2",
+    "tritonclient[http]>=2.35.0",
+    "transformers>=4.35.0",
+    "numpy>=1.24.0",
+
+    # Evaluation
+    "deepeval>=0.20.0",
+
+    # UI
+    "gradio>=4.0.0",
+
+    # Utilities
+    "tqdm>=4.66.0",
+    "pandas>=2.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    # Linting & Type Checking
+    "ruff>=0.1.0",
+    "mypy>=1.8.0",
+    "black>=24.0.0",
+    "isort>=5.13.0",
+    "pylint>=3.0.0",
+
+    # Testing
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.12.0",
+
+    # Nox for task running
+    "nox>=2024.0.0",
+    "nox-poetry>=1.0.0",
+
+    # Type stubs
+    "types-requests>=2.31.0",
+    "types-PyYAML>=6.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/your-org/url_discovery_engine"
+Repository = "https://github.com/your-org/url_discovery_engine.git"
+Documentation = "https://github.com/your-org/url_discovery_engine/blob/main/README.md"
+Issues = "https://github.com/your-org/url_discovery_engine/issues"
+
+[project.scripts]
+url-discovery = "src.url_discovery_engine.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/url_discovery_engine"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src", "tests", "config.yaml", ".env.example"]
+
+# ==========================================
+# Ruff Configuration (Linting)
+# ==========================================
+[tool.ruff]
+target-version = "py310"
+line-length = 88
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # Pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "UP",   # pyupgrade
+    "SIM",  # flake8-simplify
+    "ARG",  # flake8-unused-arguments
+    "PTH",  # flake8-use-pathlib
+    "RUF",  # Ruff-specific rules
+]
+ignore = [
+    "E501",  # Line length handled by black
+    "B008",  # Do not perform function calls in argument defaults
+    "B904",  # Within an except clause, raise exceptions with raise ... from err
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["url_discovery_engine"]
+section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]  # Unused imports in __init__.py (re-exports)
+"tests/*" = ["ARG", "B018"]
+"src/url_discovery_engine/config/*" = ["PTH"]
+
+# ==========================================
+# MyPy Configuration (Type Checking)
+# ==========================================
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+strict_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+show_error_codes = true
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+    "tests.*",
+    "crawl4ai.*",
+    "rank_bm25.*",
+    "tritonclient.*",
+    "transformers.*",
+]
+ignore_missing_imports = true
+
+# ==========================================
+# Black Configuration (Code Formatting)
+# ==========================================
+[tool.black]
+line-length = 88
+target-version = ["py310", "py311", "py312"]
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+    | venv
+)/
+'''
+
+# ==========================================
+# Isort Configuration (Import Sorting)
+# ==========================================
+[tool.isort]
+profile = "black"
+line_length = 88
+src_paths = ["src", "tests"]
+known_first_party = "url_discovery_engine"
+skip_gitignore = true
+
+# ==========================================
+# Pytest Configuration
+# ==========================================
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+python_classes = ["Test*"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+addopts = "-v --tb=short"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+]
+
+# ==========================================
+# Coverage Configuration
+# ==========================================
+[tool.coverage.run]
+source = ["src/url_discovery_engine"]
+branch = true
+omit = [
+    "*/tests/*",
+    "*/__init__.py",
+    "*/config/settings.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+]
+fail_under = 80
+show_missing = true
+
+# ==========================================
+# Pylint Configuration
+# ==========================================
+[tool.pylint.messages_control]
+disable = [
+    "C0114",  # Missing module docstring
+    "C0115",  # Missing class docstring
+    "C0116",  # Missing function docstring
+    "R0903",  # Too few public methods
+    "W0212",  # Access to a protected member
+]
+
+[tool.pylint.format]
+max-line-length = 88
+
+[tool.pylint.design]
+max-args = 10
+max-attributes = 15
+max-branches = 20
+max-locals = 20
+max-return-statements = 10
+max-statements = 60
+
+# ==========================================
+# Nox Configuration
+# ==========================================
+[tool.nox]
+# Default session will be specified in noxfile.py
+session_options = { python = "3.11" }
