@@ -1,0 +1,55 @@
+[Unit]
+Description=URL Discovery Service for Bangladeshi Government Websites
+Documentation=https://github.com/your-org/website-discovery
+After=network.target postgresql.service
+Wants=postgresql.service
+Requires=postgresql.service
+
+[Service]
+Type=simple
+User=url-discovery
+Group=url-discovery
+WorkingDirectory=/opt/url-discovery
+EnvironmentFile=/opt/url-discovery/.env
+
+# Environment setup
+Environment="PYTHONUNBUFFERED=1"
+Environment="PYTHONPATH=/opt/url-discovery"
+
+# Run the main service
+ExecStart=/opt/url-discovery/.venv/bin/python -m src.main
+
+# Restart policy - auto-restart on failure
+Restart=always
+RestartSec=10
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=256
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+
+# Allow writing to specific directories
+ReadWritePaths=/opt/url-discovery/logs
+ReadWritePaths=/opt/url-discovery/data
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=url-discovery
+
+# Timeout settings
+TimeoutStartSec=60
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target
