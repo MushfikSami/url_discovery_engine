@@ -15,7 +15,7 @@ from __future__ import annotations
 import nox
 
 # Python versions to test against
-PYTHON_VERSIONS = ["3.10", "3.11", "3.12"]
+PYTHON_VERSIONS = ["3.10", "3.11", "3.12","3.13"]
 
 # Default session to run when no session specified
 nox.options.sessions = ["lint", "test"]

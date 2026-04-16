@@ -20,6 +20,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Internet :: WWW/HTTP :: Indexing Creation",
 ]
 requires-python = ">=3.10"
@@ -65,7 +66,7 @@ Issues = "https://github.com/your-org/website-discovery/issues"
 # ============================================
 [tool.black]
 line-length = 88
-target-version = ['py310', 'py311', 'py312']
+target-version = ['py310', 'py311', 'py312','py313']
 include = '\.pyi?$'
 exclude = '''
 /(
