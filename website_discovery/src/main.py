@@ -24,7 +24,16 @@ from loguru import logger
 from src.config.settings import settings
 from src.database.connection import close_pool, get_pool
 from src.database.schema import initialize_schema
+import threading 
+import signal 
+import sys 
 
+shutdown_event = threading.Event()
+def handle_shutdown(signum, frame):
+    "Only the main thread runs this when CTRL+C is pressed"
+    print('\nReceived shutdown signal, shutting down gracefully...')
+    shutdown_event.set()
+signal.signal(signal.SIGINT, handle_shutdown)
 
 def setup_logging() -> None:
     """
@@ -106,7 +115,7 @@ async def run_discovery_cycle() -> None:
         # Use DiscoveryEngine to process seeds
         from src.crawler.engine import DiscoveryEngine
 
-        engine = DiscoveryEngine(max_workers=50, discovery_mode="one-time")
+        engine = DiscoveryEngine(max_workers=50, discovery_mode="one-time",shutdown_event=shutdown_event)
 
         # Load seeds from database
         await engine.start()
@@ -137,12 +146,20 @@ async def main_loop() -> None:
     cycle_count = 0
 
     try:
-        while True:
+        # 1. Change to check the event
+        while not shutdown_event.is_set():
             cycle_count += 1
             logger.info(f"=== Discovery cycle #{cycle_count} starting ===")
             await run_discovery_cycle()
             logger.info(f"=== Discovery cycle #{cycle_count} completed, next cycle in {settings.scheduler.check_interval}s ===")
-            await asyncio.sleep(settings.scheduler.check_interval)
+            
+            # 2. Break the sleep into 1-second chunks so it can exit instantly if Ctrl+C is pressed
+            for _ in range(settings.scheduler.check_interval):
+                if shutdown_event.is_set():
+                    break
+                await asyncio.sleep(1)
+                
+    
     except asyncio.CancelledError:
         logger.info("Main loop cancelled gracefully")
         raise
@@ -242,10 +259,7 @@ async def _main() -> None:
         sys.exit(1)
 
     # Set up signal handlers
-    loop = asyncio.get_running_loop()
-    for sig in (signal.SIGINT, signal.SIGTERM):
-        loop.add_signal_handler(sig, lambda: asyncio.create_task(shutdown()))
-
+    
     try:
         # Run main discovery loop
         await main_loop()

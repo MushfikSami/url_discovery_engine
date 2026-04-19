@@ -28,7 +28,8 @@ from src.crawler.queue import DatabaseQueue, PriorityQueue
 from src.database.connection import get_pool
 from src.database.models import Domain, UrlQueue
 
-
+import threading
+import json
 class DiscoveryEngine:
     """
     Main discovery engine for URL discovery service.
@@ -55,17 +56,12 @@ class DiscoveryEngine:
         self,
         max_workers: int | None = None,
         discovery_mode: str = "continuous",
+        shutdown_event: threading.Event | None = None,  # Add this!
     ) -> None:
-        """
-        Initialize DiscoveryEngine.
-
-        Args:
-            max_workers: Number of concurrent workers. Defaults to settings.
-            discovery_mode: 'continuous' for 24x7 or 'one-time' for single run.
-        """
         self.max_workers: int = max_workers or settings.crawler.max_concurrent_requests
         self.discovery_mode: str = discovery_mode
         self.semaphore: asyncio.Semaphore = asyncio.Semaphore(self.max_workers)
+        self.shutdown_event = shutdown_event  # Store it here
 
         # Initialize queue and finder
         self.queue: DatabaseQueue = DatabaseQueue()
@@ -87,35 +83,14 @@ class DiscoveryEngine:
         )
 
     async def start(self) -> None:
-        """
-        Start the discovery engine.
-
-        Initializes HTTP session and loads seed URLs.
-        Should be called before run().
-        """
+        """Start the discovery engine and load seeds."""
         logger.info("Starting discovery engine...")
         self._running = True
-
-        # Create HTTP session
-        connector = aiohttp.TCPConnector(
-            limit=self.max_workers * 2,
-            limit_per_host=100,
-            ttl_dns_cache=300,
-            ssl=False,
-        )
-
-        timeout = aiohttp.ClientTimeout(total=settings.crawler.timeout)
-        self._session = aiohttp.ClientSession(
-            connector=connector,
-            timeout=timeout,
-            headers={"User-Agent": settings.crawler.user_agent},
-        )
-
-        # Load seed URLs
+        
+        # Load seed URLs (Uses DB pool, doesn't need HTTP session yet)
         await self._load_seed_urls()
-
         logger.info("Discovery engine started")
-
+    
     async def stop(self) -> None:
         """
         Stop the discovery engine.
@@ -143,20 +118,28 @@ class DiscoveryEngine:
         logger.info("Discovery engine stopped")
 
     async def run(self) -> None:
-        """
-        Run the discovery engine.
-
-        Creates worker tasks and waits for queue completion.
-        For continuous mode, runs forever until stopped.
-        For one-time mode, exits when queue is empty.
-        """
+        """Run the discovery engine safely."""
         await self.start()
 
         try:
-            if self.discovery_mode == "continuous":
-                await self._continuous_loop()
-            else:
-                await self._one_time_run()
+            # THIS block fixes the memory leak. The session is guaranteed to close!
+            connector = aiohttp.TCPConnector(
+                limit=self.max_workers * 2, limit_per_host=100, ssl=False
+            )
+            timeout = aiohttp.ClientTimeout(total=settings.crawler.timeout)
+            
+            async with aiohttp.ClientSession(
+                connector=connector, 
+                timeout=timeout, 
+                headers={"User-Agent": settings.crawler.user_agent}
+            ) as session:
+                self._session = session
+                
+                if self.discovery_mode == "continuous":
+                    await self._continuous_loop()
+                else:
+                    await self._one_time_run()
+                    
         except asyncio.CancelledError:
             logger.info("Discovery engine cancelled")
         finally:
@@ -166,43 +149,55 @@ class DiscoveryEngine:
         """Run continuous discovery loop."""
         logger.info("Running in continuous mode...")
 
-        while self._running:
-            # Process queue batch
+        # 1. Check the shutdown event
+        while self._running and not (self.shutdown_event and self.shutdown_event.is_set()):
             batch = await self.in_memory_queue.get_batch(50)
             if batch:
-                # Create worker tasks for batch
                 tasks = [
                     asyncio.create_task(self._process_url(item))
                     for item in batch
                 ]
                 self._workers.extend(tasks)
 
-                # Wait for tasks to complete
                 done, pending = await asyncio.wait(
                     tasks,
                     return_when=asyncio.FIRST_COMPLETED,
                 )
 
-                # Clean up pending tasks
+                # 2. Fix the Orphan Tasks! Cancel them AND await their death.
                 for p in pending:
                     p.cancel()
+                if pending:
+                    await asyncio.gather(*pending, return_exceptions=True)
 
-            # Sleep between cycles
-            await asyncio.sleep(settings.scheduler.check_interval)
+            # 3. Sleep in chunks to allow instant shutdown
+            for _ in range(settings.scheduler.check_interval):
+                if self.shutdown_event and self.shutdown_event.is_set():
+                    break
+                await asyncio.sleep(1)
 
     async def _one_time_run(self) -> None:
         """Run single discovery cycle and exit."""
         logger.info("Running in one-time mode...")
 
-        # Process until queue is empty
-        while not self.in_memory_queue.is_empty() and self._running:
+        # Check the shutdown event
+        while not self.in_memory_queue.is_empty() and self._running and not (self.shutdown_event and self.shutdown_event.is_set()):
             batch = await self.in_memory_queue.get_batch(100)
             if not batch:
                 break
 
             tasks = [asyncio.create_task(self._process_url(item)) for item in batch]
-            await asyncio.gather(*tasks, return_exceptions=True)
-
+            
+            try:
+                await asyncio.gather(*tasks, return_exceptions=True)
+            except asyncio.CancelledError:
+                # Catch shutdown interruptions and kill tasks cleanly
+                for task in tasks:
+                    if not task.done():
+                        task.cancel()
+                await asyncio.gather(*tasks, return_exceptions=True)
+                raise
+    
     async def _load_seed_urls(self) -> int:
         """
         Load seed URLs from database.
@@ -333,7 +328,7 @@ class DiscoveryEngine:
             "domains_count": len(self.discovered_domains),
             "queue_size": self.in_memory_queue.size(),
             "stats": self.in_memory_queue.get_statistics(),
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }
 
         # Save to database as progress marker
@@ -343,7 +338,7 @@ class DiscoveryEngine:
                 INSERT INTO discovery_log (action, details)
                 VALUES ('state_save', $1)
                 """,
-                state_data,
+                json.dumps(state_data),
             )
             logger.info("State saved")
         except Exception as e:
