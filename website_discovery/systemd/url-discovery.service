@@ -1,23 +1,20 @@
 [Unit]
 Description=URL Discovery Service for Bangladeshi Government Websites
 Documentation=https://github.com/your-org/website-discovery
-After=network.target postgresql.service
-Wants=postgresql.service
-Requires=postgresql.service
+After=network.target docker.service
+Wants=docker.service
 
 [Service]
 Type=simple
-User=url-discovery
-Group=url-discovery
-WorkingDirectory=/opt/url-discovery
-EnvironmentFile=/opt/url-discovery/.env
+User=vpa
+Group=vpa
+WorkingDirectory=/home/vpa/Prod/url_discovery_engine/website_discovery
+EnvironmentFile=/home/vpa/Prod/url_discovery_engine/website_discovery/.env
 
-# Environment setup
+# Run the main service via conda-activated crawler environment
 Environment="PYTHONUNBUFFERED=1"
-Environment="PYTHONPATH=/opt/url-discovery"
-
-# Run the main service
-ExecStart=/opt/url-discovery/.venv/bin/python -m src.main
+Environment="PYTHONPATH=/home/vpa/Prod/url_discovery_engine/website_discovery"
+ExecStart=/home/vpa/miniconda3/envs/crawler/bin/python -m src.main
 
 # Restart policy - auto-restart on failure
 Restart=always
@@ -29,8 +26,8 @@ LimitNPROC=256
 
 # Security hardening
 NoNewPrivileges=true
-ProtectSystem=strict
-ProtectHome=true
+ProtectSystem=full
+ProtectHome=read-only
 PrivateTmp=true
 ProtectKernelTunables=true
 ProtectKernelModules=true
@@ -39,8 +36,7 @@ RestrictRealtime=true
 RestrictSUIDSGID=true
 
 # Allow writing to specific directories
-ReadWritePaths=/opt/url-discovery/logs
-ReadWritePaths=/opt/url-discovery/data
+ReadWritePaths=/home/vpa/Prod/url_discovery_engine/website_discovery/logs
 
 # Logging
 StandardOutput=journal

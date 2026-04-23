@@ -94,3 +94,4 @@ Thumbs.db
 config.yaml
 *.pid
 resources/*
+seeds/crawled_alive_gov_bd_sites.txt

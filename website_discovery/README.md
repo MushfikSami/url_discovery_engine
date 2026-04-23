@@ -14,78 +14,111 @@ This service provides continuous domain discovery capabilities with:
 - **Retry Management**: Automatic retry for failed URLs with backoff
 - **Audit Trail**: Complete discovery history in `discovery_log` table
 
-## Quick Start
+## Prerequisites
 
-### Prerequisites
-
-- **Python 3.10+**
+- **Python 3.13** (managed via conda)
+- **Conda** (Miniconda or Miniforge)
 - **PostgreSQL 15+**
 - **systemd** (for production deployment)
 
-### Installation
+## Quick Start
+
+### 1. Create the conda environment
 
 ```bash
-# Clone repository
-git clone https://github.com/your-org/website-discovery /opt/url-discovery
-cd /opt/url-discovery
+conda create -n crawler python=3.13 -y
+conda activate crawler
+```
 
-# Create service user
-sudo useradd -r -s /bin/false url-discovery
+### 2. Install dependencies
 
-# Create virtual environment
-python3 -m venv .venv
-source .venv/bin/activate
+```bash
+# Install production dependencies
+pip install -r requirements.txt
 
-# Install dependencies
-pip install -e ".[dev]"
+# Install the package in editable mode (for CLI entry points)
+pip install -e .
+```
+
+### 3. Install dev dependencies
+
+```bash
+# Install development + testing tooling
+pip install pytest pytest-asyncio pytest-cov nox mypy ruff black pre-commit
+```
+
+### 4. Setup the project
+
+```bash
 
 # Create logs directory
 mkdir -p logs
-sudo chown url-discovery:url-discovery logs
 
 # Setup environment
 cp .env.example .env
 # Edit .env with your PostgreSQL credentials
 ```
 
-### Database Setup
+### 5. Database Setup
 
 ```bash
-# Create database and user
-sudo -u postgres psql << EOF
-CREATE USER url_discovery WITH PASSWORD 'your_secure_password';
-CREATE DATABASE url_discovery_db OWNER url_discovery;
-GRANT ALL PRIVILEGES ON DATABASE url_discovery_db TO url_discovery;
-EOF
+# Create database (run inside the PostgreSQL container)
+docker exec -it $container_name psql -U $postgres 
+CREATE DATABASE url_discovery_db;
 
 # Run schema migration
-.venv/bin/python -m src.database.schema
+python scripts/setup_database.py
 ```
 
-### Adding Seed URLs
+### 6. Add Seed URLs
 
 ```bash
 # Create seed file (one URL per line)
 echo -e "https://bangladesh.gov.bd\nhttps://ministry.gov.bd" > seeds/input/seeds.txt
 
 # Ingest seeds
-.venv/bin/python -m src.tools.ingest_seed_urls seeds/input/seeds.txt manual
+python -m src.tools.ingest_seed_urls seeds/input/seeds.txt manual
 ```
 
-### Running the Service
+### 7. Run the Service
 
 ```bash
 # Development mode
-.venv/bin/python -m src.main
+python -m src.main
 
 # Production mode (systemd)
+# Update systemd unit with correct paths before installing
+sed -i "s|User=vpa|User=<your-system-user>|g" systemd/url-discovery.service
+sed -i "s|WorkingDirectory=.*|WorkingDirectory=<your-project-path>|g" systemd/url-discovery.service
+sed -i "s|EnvironmentFile=.*|EnvironmentFile=<your-project-path>/.env|g" systemd/url-discovery.service
+sed -i "s|Environment=\"PYTHONPATH=.*|Environment=\"PYTHONPATH=<your-project-path>|g" systemd/url-discovery.service
+sed -i "s|ExecStart=.*|ExecStart=<path-to-conda-env>/bin/python -m src.main|g" systemd/url-discovery.service
+sed -i "s|ReadWritePaths=.*|ReadWritePaths=<your-project-path>/logs|g" systemd/url-discovery.service
+
 sudo cp systemd/url-discovery.service /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable url-discovery
 sudo systemctl start url-discovery
 ```
 
-### Verify Service Status
+**Generic systemd unit template** — adjust these fields for your deployment:
+
+| Field | What to change |
+|-------|---------------|
+| `User` / `Group` | System user that runs the service (e.g. `vpa`, `url-discovery`) |
+| `WorkingDirectory` | Absolute path to the project root |
+| `EnvironmentFile` | Absolute path to the `.env` file |
+| `ExecStart` | Full path to the Python binary inside your conda venv |
+| `ReadWritePaths` | Directories the service needs to write to (logs, data) |
+
+Example:
+```
+User=vpa
+WorkingDirectory=/home/vpa/Prod/url_discovery_engine/website_discovery
+ExecStart=/home/vpa/miniconda3/envs/crawler/bin/python -m src.main
+```
+
+### 8. Verify Service Status
 
 ```bash
 # Check service status
@@ -161,23 +194,42 @@ See [docs/db_diagram.md](docs/db_diagram.md) for detailed schema documentation.
 ### Ingest Seed URLs
 
 ```bash
-.venv/bin/python -m src.tools.ingest_seed_urls <file.txt> [source]
+python -m src.tools.ingest_seed_urls <file.txt> [source]
 
 # Examples
-.venv/bin/python -m src.tools.ingest_seed_urls seeds/input.txt manual
-.venv/bin/python -m src.tools.ingest_seed_urls batch.csv batch
+python -m src.tools.ingest_seed_urls seeds/input.txt manual
+python -m src.tools.ingest_seed_urls batch.csv batch
 ```
 
 ### Status Report
 
 ```bash
-.venv/bin/python -m src.tools.status_report
+python -m src.tools.status_report
 
 # Output example:
 # Total Domains: 1234
 # Live: 1089 (88.2%)
 # Dead: 145
 # Queue Items: 23
+```
+
+### Database Setup Script
+
+```bash
+python scripts/setup_database.py
+
+# Automatically:
+#   1. Creates PostgreSQL user
+#   2. Creates database (if not exists)
+#   3. Grants permissions
+#   4. Runs schema migration
+#   5. Verifies tables, indexes, views, functions
+```
+
+### Database Verification Script
+
+```bash
+python scripts/verify_database.py
 ```
 
 ## Architecture
@@ -252,130 +304,167 @@ LIMIT 10;
 SELECT * FROM v_discovery_stats;
 ```
 
-## Testing & Development
+## Testing
 
-### Running Tests
+### Prerequisites
+
+Ensure you have the dev dependencies installed:
 
 ```bash
-# Run all tests (lint + test + typecheck)
-nox
+conda activate crawler
+pip install pytest pytest-asyncio pytest-cov
+```
 
-# Run tests only
-nox -s test-3.12
+### Unit Tests
 
-# Run specific Python version
-nox -s test-3.10
-nox -s test-3.11
-nox -s test-3.12
+Tests for configuration, database models, crawler logic, and services:
 
-# Run tests with coverage
-pytest tests/ -v --cov=src --cov-report=html
+```bash
+# Run all unit tests
+pytest tests/unit/ -v
 
 # Run specific test file
 pytest tests/unit/test_config.py -v
-
-# Run specific test class
-pytest tests/unit/test_crawler.py::TestPriorityQueue -v
-
-# Run specific test
-pytest tests/unit/test_crawler.py::TestPriorityQueue::test_get_batch -v
-
-# Run integration tests only
-pytest tests/integration/ -v -m integration
-
-# Run unit tests only
-pytest tests/unit/ -v
+pytest tests/unit/test_crawler.py -v
+pytest tests/unit/test_database_models.py -v
+pytest tests/unit/test_services.py -v
 ```
 
-### Running Linters
+### Integration Tests
+
+End-to-end tests for the full discovery pipeline:
+
+```bash
+# Run all integration tests
+pytest tests/integration/ -v
+
+# Run integration tests only (marked with @pytest.mark.integration)
+pytest tests/integration/ -v -m integration
+```
+
+### All Tests (Unit + Integration)
+
+```bash
+# Run all tests with verbose output
+pytest tests/ -v
+
+# Run all tests with coverage report
+pytest tests/ -v --cov=src --cov-report=term-missing
+
+# Run all tests with HTML coverage report
+pytest tests/ -v --cov=src --cov-report=html
+
+# Run tests and fail on the first error
+pytest tests/ -v -x
+```
+
+### Specific Test Selection
+
+```bash
+# Run a specific test class
+pytest tests/unit/test_crawler.py::TestPriorityQueue -v
+
+# Run a specific test method
+pytest tests/unit/test_crawler.py::TestPriorityQueue::test_get_batch -v
+
+# Skip slow tests
+pytest tests/ -v -m "not slow"
+```
+
+### Nox Sessions
+
+Nox provides isolated virtual environments for testing:
+
+```bash
+# Run all default sessions (lint + test)
+nox
+
+# Run tests only
+nox -s test
+
+# Run linting only
+nox -s lint
+
+# Format code
+nox -s format
+
+# Check formatting without modifying files
+nox -s format -- --check
+
+# Run type checking with mypy
+nox -s typecheck
+
+# Run pre-commit hooks
+nox -s pre_commit
+
+# Clean generated files
+nox -s clean
+```
+
+### Linters
 
 ```bash
 # Run all linters (ruff + mypy)
 nox -s lint
 
 # Run ruff (code style/linting)
-python -m ruff check src/ tests/
+ruff check src/ tests/
 
 # Auto-fix ruff issues
-python -m ruff check src/ tests/ --fix
+ruff check src/ tests/ --fix
 
 # Run mypy (type checking)
-python -m mypy src/
+mypy src/
 
 # Run pre-commit hooks
 pre-commit run --all-files
 ```
 
-### Nox Sessions
-
-| Session | Description |
-|---------|-------------|
-| `lint` | Run all linters (ruff, mypy) |
-| `test-3.10` | Run tests with Python 3.10 |
-| `test-3.11` | Run tests with Python 3.11 |
-| `test-3.12` | Run tests with Python 3.12 |
-| `format` | Format code with black and isort |
-| `typecheck` | Run mypy type checking |
-
 ### Code Quality Checklist
 
 Before committing code:
 
-1. ✅ Run linting: `nox -s lint`
-2. ✅ Run tests: `nox -s test-3.12`
-3. ✅ Format code: `nox -s format -- --check`
-4. ✅ Type check: `python -m mypy src/`
+1. Run linting: `nox -s lint`
+2. Run tests: `pytest tests/ -v --cov=src --cov-report=term-missing`
+3. Format code: `nox -s format`
+4. Type check: `mypy src/`
 
-### Development Workflow
+## Development Workflow
 
 ```bash
-# 1. Create feature branch
+# 1. Activate the conda environment
+conda activate crawler
+
+# 2. Create feature branch
 git checkout -b feature/your-feature
 
-# 2. Make changes
+# 3. Make changes
 # ... edit files in src/ ...
 
-# 3. Add tests for new features
+# 4. Add tests for new features
 pytest tests/ -v
 
-# 4. Run linting
+# 5. Run linting
 nox -s lint
 
-# 5. Format code
+# 6. Format code
 nox -s format
 
-# 6. Commit
+# 7. Commit
 git add .
 git commit -m "feat: add your feature"
 
-# 7. Push and create PR
+# 8. Push and create PR
 git push origin feature/your-feature
 ```
 
-### Continuous Integration
+## Continuous Integration
 
 Tests and linting are run automatically on:
+
 - Pull requests to main branch
 - Daily scheduled runs
 - Before any release
-
-## Development
-
-### Adding New Features
-
-1. Create feature branch
-2. Implement changes in `src/`
-3. Add/update tests in `tests/`
-4. Run linting: `nox -s lint`
-5. Run tests: `nox -s test`
-6. Format code: `nox -s format`
-
-### Adding New Database Table
-
-1. Update `migrations/001_initial_schema.sql`
-2. Add model to `src/database/models.py`
-3. Add connection methods to `src/database/connection.py`
-4. Update schema initialization
 
 ## License
 
