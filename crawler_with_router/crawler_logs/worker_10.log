@@ -1,0 +1,824 @@
+[*] Seeds loaded from data/crawled_alive_gov_bd_sites.txt.
+
+🚀 Starting Domain-by-Domain Spider...
+
+==================================================
+[*] STARTING NEW DOMAIN: http://bhavnasecondaryschool.jessoreboard.gov.bd
+==================================================
+    -> Crawling: http://bhavnasecondaryschool.jessoreboard.gov.bd
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://bhavnasecondaryschool.jessoreboard.gov.bd/
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://bhavnasecondaryschool.jessoreboard.gov.bd/index.php/website/attendance
+    [Action] Option B (Static): Routing to markdownify
+[+] Domain exhausted. Finishing up: http://bhavnasecondaryschool.jessoreboard.gov.bd
+==================================================
+[*] STARTING NEW DOMAIN: http://btebcbt.gov.bd
+==================================================
+    -> Crawling: http://btebcbt.gov.bd
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/home/contentLoad/42
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/home/contentLoad/44
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/list_accreditation_doc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instlistOpen
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/list_user
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/_AdmRpt
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/Utility/list_cbt_curriculum_framework
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/home/contentLoad/13?top=top
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/Utility/list_all_update_record
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/comContactUs/biography/10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/contractlist
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/comContactUs/biography/7
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/home/contentLoad/18?top=top
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/Utility/certifiedList
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/Utility/list_cblm_doc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/comContactUs/biography/5
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/Utility/certified_list_anytext
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/instituteAccreditation_GeneralInformation/Create
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/StdCertificateUpload/list_user
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/Utility/list_cslb_doc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/Utility/soa_list_anytext
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/cbcList
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/Utility/list_other_doc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/home/contentLoad/6?top=top
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/trade_course_advertisement/list_user
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/Utility/list_quality_assurance_manual
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/Utility/rpl_guide_line
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/comContactUs/biography/9
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/comContactUs/biography/6
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/Utility/list_implementation_manual
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/Utility/soa_list
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/Utility/list_all_notice
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?search=&offset=70&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/700
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=ein&max=10&order=asc
+      [!] HTTP Error: 
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?search=&offset=50&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=email&max=10&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=district&max=10&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?search=&offset=60&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=instituteName&max=10&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/759
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?search=&offset=10&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/150
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/605
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=instituteCode&max=10&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?search=&offset=90&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?search=&offset=30&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/553
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?format=pdf&extension=pdf&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/405
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/487
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?search=&offset=80&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/419
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?format=rtf&extension=rtf&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/432
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?search=&offset=500&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?format=excel&extension=xls&max=10
+    [Action] Option B (Static): Routing to markdownify
+  [!] DB Error in save_crawled_data: A string literal cannot contain NUL (0x00) characters.
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?search=&offset=40&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=division&max=10&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/595
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?search=&offset=20&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/list_accreditation_doc?max=10&search=&offset=80
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/list_accreditation_doc?max=10&search=&offset=40
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/list_accreditation_doc?max=10&search=&offset=60
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/list_accreditation_doc?max=10&search=&offset=30
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/list_accreditation_doc?max=10&search=&offset=20
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/list_accreditation_doc?max=10&search=&offset=50
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/list_accreditation_doc?max=10&search=&offset=90
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/list_accreditation_doc?max=10&search=&offset=70
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/list_accreditation_doc?max=10&search=&offset=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instlistOpen?max=10&search=&offset=90
+      [!] HTTP Error: 
+    -> Crawling: http://btebcbt.gov.bd/utility/instlistOpen?sort=email&max=10&order=asc
+      [!] HTTP Error: 
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstitute/763
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instlistOpen?sort=instituteCode&max=10&order=asc
+      [!] HTTP Error: 
+    -> Crawling: http://btebcbt.gov.bd/utility/instlistOpen?sort=ein&max=10&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstitute/766
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstitute/767
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstitute/765
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instlistOpen?max=10&search=&offset=70
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstitute/762
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstitute/159
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instlistOpen?sort=district&max=10&order=asc
+      [!] HTTP Error: 
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstitute/764
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instlistOpen?sort=instituteName&max=10&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instlistOpen?max=10&search=&offset=500
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instlistOpen?max=10&search=&offset=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstitute/768
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instlistOpen?max=10&search=&offset=80
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstitute/718
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instlistOpen?max=10&search=&offset=40
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instlistOpen?sort=division&max=10&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instlistOpen?max=10&search=&offset=60
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instlistOpen?max=10&search=&offset=20
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instlistOpen?max=10&search=&offset=30
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstitute/140
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instlistOpen?max=10&search=&offset=50
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/list_user?max=10&search=&offset=60
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/list_user?max=10&search=&offset=50
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/list_user?max=10&search=&offset=80
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/list_user?max=10&search=&offset=20
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/list_user?max=10&search=&offset=90
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/list_user?max=10&search=&offset=30
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/list_user?max=10&search=&offset=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/list_user?max=10&search=&offset=40
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/list_user?max=10&search=&offset=170
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/list_user?max=10&search=&offset=70
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/contractlist?sort=sortingOrder&max=10&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/show/10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/show/9
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/contractlist?sort=activity&max=10&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/contractlist?sort=contactPersonName&max=10&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/contractlist?sort=designation&max=10&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/contractlist?sort=phone&max=10&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/show/1
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/certifiedList?max=10&search=&offset=20
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/certifiedList?max=10&search=&offset=60
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/certifiedList?max=10&search=&offset=30
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/certifiedList?max=10&search=&offset=50
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/certifiedList?max=10&search=&offset=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/certifiedList?max=10&search=&offset=297240
+      [!] HTTP Error: 
+    -> Crawling: http://btebcbt.gov.bd/utility/certifiedList?max=10&search=&offset=70
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/certifiedList?max=10&search=&offset=90
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/certifiedList?max=10&search=&offset=40
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/certifiedList?max=10&search=&offset=80
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/certified_list_anytext?search=&offset=90&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/certified_list_anytext?search=&offset=10&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/certified_list_anytext?search=&offset=30&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/certified_list_anytext?search=&offset=297200&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/certified_list_anytext?search=&offset=20&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/certified_list_anytext?search=&offset=70&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/certified_list_anytext?search=&offset=60&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/certified_list_anytext?search=&offset=80&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/certified_list_anytext?search=&offset=40&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/certified_list_anytext?search=&offset=50&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/stdCertificateUpload/list_user?format=rtf&extension=rtf
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/stdCertificateUpload/list_user?format=pdf&extension=pdf
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/stdCertificateUpload/list_user?sort=registrationNo&max=10&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/stdCertificateUpload/list_user?format=excel&extension=xls
+    [Action] Option B (Static): Routing to markdownify
+  [!] DB Error in save_crawled_data: A string literal cannot contain NUL (0x00) characters.
+    -> Crawling: http://btebcbt.gov.bd/stdCertificateUpload/list_user?sort=studentName&max=10&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/stdCertificateUpload/show_user/1
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/stdCertificateUpload/show_user/2
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/soa_list_anytext?search=&offset=80&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/soa_list_anytext?search=&offset=20&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/soa_list_anytext?search=&offset=50&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/soa_list_anytext?search=&offset=80580&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/soa_list_anytext?search=&offset=10&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/soa_list_anytext?search=&offset=30&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/soa_list_anytext?search=&offset=90&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/soa_list_anytext?search=&offset=60&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/soa_list_anytext?search=&offset=40&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/soa_list_anytext?search=&offset=70&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/trade_course_advertisement/list_user?format=rtf&extension=rtf
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/studentAdmissionApplication/searchApplication
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/trade_course_advertisement/Level_new.html
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/trade_course_advertisement/list_user?sort=title&max=10&order=asc
+      [!] HTTP Error: 
+    -> Crawling: http://btebcbt.gov.bd/trade_course_advertisement/list_user?sort=closing_date&max=10&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/studentAdmissionApplication/searchAdmitCard
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/trade_course_advertisement/list_user?sort=adv_description&max=10&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/trade_course_advertisement/list_user?format=excel&extension=xls
+    [Action] Option B (Static): Routing to markdownify
+  [!] DB Error in save_crawled_data: A string literal cannot contain NUL (0x00) characters.
+    -> Crawling: http://btebcbt.gov.bd/trade_course_advertisement/list_user?format=pdf&extension=pdf
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/soa_list?search=&offset=60&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/soa_list?search=&offset=40&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/soa_list?search=&offset=80&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/soa_list?search=&offset=10&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/soa_list?search=&offset=297240&max=10
+      [!] HTTP Error: 
+    -> Crawling: http://btebcbt.gov.bd/utility/soa_list?search=&offset=90&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/soa_list?search=&offset=30&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/soa_list?search=&offset=70&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/soa_list?search=&offset=50&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/soa_list?search=&offset=20&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=instituteName&max=10&offset=70&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?format=rtf&extension=rtf&max=10&search=&offset=70
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=email&max=10&offset=70&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/222
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=ein&max=10&offset=70&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=division&max=10&offset=70&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/562
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/441
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/476
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?search=&offset=100&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/188
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?search=&offset=0&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/666
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?format=excel&extension=xls&max=10&search=&offset=70
+    [Action] Option B (Static): Routing to markdownify
+  [!] DB Error in save_crawled_data: A string literal cannot contain NUL (0x00) characters.
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=instituteCode&max=10&offset=70&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/479
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?search=&offset=110&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/230
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?format=pdf&extension=pdf&max=10&search=&offset=70
+    [Action] Option B (Static): Routing to markdownify
+  [!] DB Error in save_crawled_data: A string literal cannot contain NUL (0x00) characters.
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/490
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/608
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=district&max=10&offset=70&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/481
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=email&max=10&offset=50&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/185
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/482
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=instituteCode&max=10&offset=50&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/454
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/590
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?format=rtf&extension=rtf&max=10&search=&offset=50
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?format=excel&extension=xls&max=10&search=&offset=50
+    [Action] Option B (Static): Routing to markdownify
+  [!] DB Error in save_crawled_data: A string literal cannot contain NUL (0x00) characters.
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/554
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/455
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=district&max=10&offset=50&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/119
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=division&max=10&offset=50&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=instituteName&max=10&offset=50&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/159
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?format=pdf&extension=pdf&max=10&search=&offset=50
+    [Action] Option B (Static): Routing to markdownify
+  [!] DB Error in save_crawled_data: A string literal cannot contain NUL (0x00) characters.
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/558
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=ein&max=10&offset=50&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/402
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=email&max=10&offset=60&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/438
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=instituteName&max=10&offset=60&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=instituteCode&max=10&offset=60&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/545
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/625
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=division&max=10&offset=60&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/760
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=ein&max=10&offset=60&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?format=excel&extension=xls&max=10&search=&offset=60
+    [Action] Option B (Static): Routing to markdownify
+  [!] DB Error in save_crawled_data: A string literal cannot contain NUL (0x00) characters.
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?format=rtf&extension=rtf&max=10&search=&offset=60
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/214
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/601
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=district&max=10&offset=60&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/745
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/747
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/215
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?format=pdf&extension=pdf&max=10&search=&offset=60
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=instituteCode&max=10&offset=10&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/420
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/204
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/183
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/498
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/205
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/257
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=district&max=10&offset=10&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=division&max=10&offset=10&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/254
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?format=excel&extension=xls&max=10&search=&offset=10
+    [Action] Option B (Static): Routing to markdownify
+  [!] DB Error in save_crawled_data: A string literal cannot contain NUL (0x00) characters.
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?format=pdf&extension=pdf&max=10&search=&offset=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/499
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/429
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=ein&max=10&offset=10&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?format=rtf&extension=rtf&max=10&search=&offset=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=instituteName&max=10&offset=10&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/470
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=email&max=10&offset=10&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=instituteName&max=10&offset=90&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/710
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=email&max=10&offset=90&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=instituteCode&max=10&offset=90&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?search=&offset=130&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?format=pdf&extension=pdf&max=10&search=&offset=90
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/521
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=ein&max=10&offset=90&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/187
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/509
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/764
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/516
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/144
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=district&max=10&offset=90&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/564
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=division&max=10&offset=90&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?format=excel&extension=xls&max=10&search=&offset=90
+    [Action] Option B (Static): Routing to markdownify
+  [!] DB Error in save_crawled_data: A string literal cannot contain NUL (0x00) characters.
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?format=rtf&extension=rtf&max=10&search=&offset=90
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/754
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/673
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?search=&offset=120&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=district&max=10&offset=30&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/646
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=division&max=10&offset=30&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?format=rtf&extension=rtf&max=10&search=&offset=30
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=ein&max=10&offset=30&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/585
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=instituteCode&max=10&offset=30&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/179
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/602
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/488
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/519
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=email&max=10&offset=30&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=instituteName&max=10&offset=30&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?format=pdf&extension=pdf&max=10&search=&offset=30
+    [Action] Option B (Static): Routing to markdownify
+  [!] DB Error in save_crawled_data: A string literal cannot contain NUL (0x00) characters.
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?format=excel&extension=xls&max=10&search=&offset=30
+    [Action] Option B (Static): Routing to markdownify
+  [!] DB Error in save_crawled_data: A string literal cannot contain NUL (0x00) characters.
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/761
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/749
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/750
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/684
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=email&max=10&offset=80&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/566
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=instituteCode&max=10&offset=80&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=instituteName&max=10&offset=80&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/241
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/738
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=division&max=10&offset=80&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/246
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/447
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/435
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/598
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?format=rtf&extension=rtf&max=10&search=&offset=80
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?format=excel&extension=xls&max=10&search=&offset=80
+    [Action] Option B (Static): Routing to markdownify
+  [!] DB Error in save_crawled_data: A string literal cannot contain NUL (0x00) characters.
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/609
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/247
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/446
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=ein&max=10&offset=80&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=district&max=10&offset=80&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?format=pdf&extension=pdf&max=10&search=&offset=80
+    [Action] Option B (Static): Routing to markdownify
+  [!] DB Error in save_crawled_data: A string literal cannot contain NUL (0x00) characters.
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/497
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=email&max=10&offset=500&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=division&max=10&offset=500&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?format=rtf&extension=rtf&max=10&search=&offset=500
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?search=&offset=450&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/462
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?search=&offset=430&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?search=&offset=440&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?search=&offset=460&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?search=&offset=410&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?search=&offset=480&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/464
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=instituteName&max=10&offset=500&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=ein&max=10&offset=500&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?search=&offset=420&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=district&max=10&offset=500&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=instituteCode&max=10&offset=500&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?format=excel&extension=xls&max=10&search=&offset=500
+    [Action] Option B (Static): Routing to markdownify
+  [!] DB Error in save_crawled_data: A string literal cannot contain NUL (0x00) characters.
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/526
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?search=&offset=470&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?search=&offset=490&max=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?format=pdf&extension=pdf&max=10&search=&offset=500
+    [Action] Option B (Static): Routing to markdownify
+  [!] DB Error in save_crawled_data: A string literal cannot contain NUL (0x00) characters.
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/145
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/232
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/138
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?format=pdf&extension=pdf&max=10&search=&offset=40
+    [Action] Option B (Static): Routing to markdownify
+  [!] DB Error in save_crawled_data: A string literal cannot contain NUL (0x00) characters.
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=instituteCode&max=10&offset=40&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?format=excel&extension=xls&max=10&search=&offset=40
+    [Action] Option B (Static): Routing to markdownify
+  [!] DB Error in save_crawled_data: A string literal cannot contain NUL (0x00) characters.
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=division&max=10&offset=40&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/665
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/123
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=instituteName&max=10&offset=40&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/404
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=district&max=10&offset=40&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/611
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=email&max=10&offset=40&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?format=rtf&extension=rtf&max=10&search=&offset=40
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/765
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=ein&max=10&offset=40&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/580
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/125
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/453
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?format=rtf&extension=rtf&max=10&search=&offset=20
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=ein&max=10&offset=20&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/648
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?format=excel&extension=xls&max=10&search=&offset=20
+    [Action] Option B (Static): Routing to markdownify
+  [!] DB Error in save_crawled_data: A string literal cannot contain NUL (0x00) characters.
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=division&max=10&offset=20&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/621
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/196
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=district&max=10&offset=20&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/250
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?format=pdf&extension=pdf&max=10&search=&offset=20
+    [Action] Option B (Static): Routing to markdownify
+  [!] DB Error in save_crawled_data: A string literal cannot contain NUL (0x00) characters.
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/445
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/525
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/570
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=instituteCode&max=10&offset=20&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=instituteName&max=10&offset=20&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/686
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstituteDetails/664
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instituteList?sort=email&max=10&offset=20&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/list_accreditation_doc?max=10&search=&offset=0
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instlistOpen?max=10&sort=ein&order=asc&search=&offset=50
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instlistOpen?max=10&sort=ein&order=asc&search=&offset=30
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instlistOpen?max=10&sort=ein&order=asc&search=&offset=40
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instlistOpen?max=10&sort=ein&order=asc&search=&offset=60
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instlistOpen?max=10&sort=ein&order=asc&search=&offset=80
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instlistOpen?max=10&sort=ein&order=asc&search=&offset=500
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instlistOpen?sort=ein&max=10&order=desc
+      [!] HTTP Error: 
+    -> Crawling: http://btebcbt.gov.bd/utility/instlistOpen?max=10&sort=ein&order=asc&search=&offset=20
+      [!] HTTP Error: 
+    -> Crawling: http://btebcbt.gov.bd/utility/instlistOpen?max=10&sort=ein&order=asc&search=&offset=70
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instlistOpen?max=10&sort=ein&order=asc&search=&offset=10
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instlistOpen?max=10&sort=ein&order=asc&search=&offset=90
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instlistOpen?sort=ein&max=10&offset=70&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstitute/694
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instlistOpen?max=10&search=&offset=100
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstitute/698
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instlistOpen?sort=instituteName&max=10&offset=70&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instlistOpen?sort=division&max=10&offset=70&order=asc
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstitute/697
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstitute/691
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstitute/696
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/showInstitute/689
+    [Action] Option B (Static): Routing to markdownify
+    -> Crawling: http://btebcbt.gov.bd/utility/instlistOpen?max=10&search=&offset=0

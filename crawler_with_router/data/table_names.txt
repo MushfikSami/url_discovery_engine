@@ -1,0 +1,56 @@
+seed_websites
+crawled_data 
+domain_hierarchy
+spider_queue
+
+
+🛠️ Fleet Management Commands (Save these!)
+Once your fleet is running in the background, you will need to know how to monitor and control it.
+
+1. Watch a worker in real-time:
+If you want to see exactly what Worker #1 is doing right now, use tail -f (follow):
+
+Bash
+tail -f crawler_logs/worker_1.log
+(Press Ctrl+C to stop watching the log. The worker will keep running in the background).
+
+2. Check how many workers are actually running:
+To ensure all your Python processes are alive and haven't crashed, run:
+
+Bash
+ps aux | grep spider.py
+3. The "Kill Switch" (How to stop the fleet):
+If you ever need to stop the entire crawler fleet immediately (for example, if your senior needs to flush the server right now), use pkill. This command searches for any process matching the name and terminates it:
+
+Bash
+pkill -f spider.py
+Your Postgres database is going to handle the queueing like a champion. With 15-20 workers running, that 67-day estimate is going to drop down to just a few days. Happy crawling! Let me know if you run into any database connection limits or need help analyzing the results.
+
+1. The Website List (Root Domains)
+To see the list of all the main websites (e.g., http://abak.zakiganj.sylhet.gov.bd), you want the seed_websites table. This holds the original list from your text file and tracks whether the domain is pending, processing, or completed.
+
+The Query:
+
+SQL
+SELECT website_url, status FROM seed_websites;
+2. The Webpages List (All Discovered Internal Pages)
+If you want to see every single internal webpage the crawler has found (e.g., /contact, /about-us, /notices), you should look at the spider_queue table. This is the master list of all discovered URLs across all domains.
+
+The Query:
+
+SQL
+SELECT url, base_domain, status FROM spider_queue;
+3. The Successfully Crawled Webpages List
+If you only care about the webpages that were successfully downloaded, parsed, and converted to Markdown (excluding ones that failed or haven't been crawled yet), you want the crawled_data table.
+
+The Query:
+
+SQL
+SELECT url FROM crawled_data;
+4. The Master Map (Websites + Webpages Together)
+If you want to see them combined—a list of websites with all of their respective webpages neatly grouped together—you will look at the domain_hierarchy table. This uses the PostgreSQL ARRAY to store the lists.
+
+The Query:
+
+SQL
+SELECT website, web_pages FROM domain_hierarchy;
