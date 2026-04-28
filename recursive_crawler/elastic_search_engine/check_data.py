@@ -15,17 +15,12 @@ search_query = {
         "bool": {
             "must": [
                 # The chunk MUST be related to Freedom Fighters
-                {"match": {"chunk_text": "মুক্তিযোদ্ধা"}} 
+                {"match": {"chunk_text": "নাগরিকত্ব"}} 
             ],
             "should": [
                 # Context words for name correction
-                {"match": {"chunk_text": "সংশোধন"}},    # Correction
-                {"match": {"chunk_text": "নাম"}},       # Name
-                {"match": {"chunk_text": "ভুল"}},       # Mistake/Error
-                {"match": {"chunk_text": "সনদ"}},       # Certificate
-                {"match": {"chunk_text": "গেজেট"}},     # Gazette
-                {"match": {"chunk_text": "আবেদন"}},     # Application
-                {"match": {"chunk_text": "ফরম"}}        # Form
+                {"match": {"chunk_text": "সনদ"}}       # Name
+                   # Form
             ],
             "minimum_should_match": 3 # Stricter matching: Must contain at least 3 of the context words to filter out generic lists of freedom fighters
         }

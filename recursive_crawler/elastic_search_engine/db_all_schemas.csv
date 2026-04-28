@@ -1,0 +1,11 @@
+Table Name,Column Name,Data Type
+websites,url,text
+websites,summary,text
+websites,keywords,jsonb
+websites,raw_markdown,text
+websites,status,text
+websites,processed_at,timestamp without time zone
+website_links,id,integer
+website_links,source_url,text
+website_links,target_url,text
+website_links,created_at,timestamp without time zone
