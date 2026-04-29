@@ -227,14 +227,31 @@ async def process_url(url, base_domain):
     
     discovered_links = set()
     for a_tag in soup.find_all('a', href=True):
-        href = a_tag['href']
+        # Clean whitespace and strip anchor tags
+        href = a_tag['href'].strip()
         full_url = urljoin(url, href).split('#')[0]
         
+        # ==========================================
+        # THE TRAP KILLERS
+        # ==========================================
+        # 1. Block HTML/JS Injection (The Frankenstein Killer)
+        if '<' in full_url or '>' in full_url or '{' in full_url or '[' in full_url:
+            continue
+            
+        # 2. Block Insanely Long URLs (The Infinite Loop Killer)
+        if len(full_url) > 250:
+            continue
+            
+        # 3. Block Path Recursion (e.g. /site/view/site/view/site/view)
+        path_segments = [seg for seg in urlparse(full_url).path.split('/') if seg]
+        if any(path_segments.count(seg) > 2 for seg in path_segments):
+            continue
+        # ==========================================
+
         # Only keep links belonging to the exact same base domain
         if full_url.startswith(base_domain) and not full_url.endswith(('.pdf', '.zip', '.doc', '.xlsx')):
             discovered_links.add(full_url)
-            update_domain_hierarchy(base_domain, full_url)
-
+            
     if is_javascript_heavy(soup):
         final_markdown = await parse_with_crawl4ai(url)
     else:
