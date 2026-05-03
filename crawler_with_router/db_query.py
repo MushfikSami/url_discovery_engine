@@ -60,7 +60,7 @@ def export_query_to_text(query, output_filename):
 if __name__ == "__main__":
     # Insert your specific SQL query here
     sample_query = """
-        SELECT count(*) from crawled_data;
+        SELECT count(*) from crawled_data ;
     """
     
     export_query_to_text(sample_query, OUTPUT_FILE)

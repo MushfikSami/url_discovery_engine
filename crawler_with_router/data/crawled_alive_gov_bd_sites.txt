@@ -866,7 +866,6 @@ http://pdbf.chougachha.jessore.gov.bd
 http://pdbf.dewangonj.jamalpur.gov.bd
 http://pdbf.rajapur.jhalakathi.gov.bd
 http://pds.sib.gov.bd
-http://photo.dghs.gov.bd
 http://pio.atpara.netrokona.gov.bd
 http://pio.bokshiganj.jamalpur.gov.bd
 http://pio.dewangonj.jamalpur.gov.bd
