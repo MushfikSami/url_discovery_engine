@@ -1,6 +1,6 @@
 # config.py
 
-MODEL_NAME = "qwen35"
+MODEL_NAME = "qwen36"
 TREE_PATH = "../PageIndex/results/bd_gov_ecosystem_structure.json" 
 MAX_HOPS = 5
 
