@@ -1,69 +1,124 @@
 import requests
-import pandas as pd
 import json
-import difflib
+from elasticsearch import Elasticsearch
+from transformers import AutoTokenizer
+import numpy as np # (Make sure to import numpy as well)
+tokenizer = AutoTokenizer.from_pretrained("google/embeddinggemma-300m")
 
-class QLeverWikipediaTool:
-    def __init__(self, csv_path="./data/bangladesh_bn_wiki_true_massive.csv", qlever_url="http://localhost:7005"):
+class GraphRAGWikipediaTool:
+    def __init__(self, es_url="http://localhost:9200", qlever_url="http://localhost:7005"):
         self.qlever_url = qlever_url
+        self.index_name = "wikipedia_bn_graphrag"
         
-        # Load the CSV into an ultra-fast lookup dictionary in RAM
-        print("⚙️ Loading Knowledge Graph Text-to-QID Index...")
-        df = pd.read_csv(csv_path)
-        # Create a dictionary of { "ঢাকা": "Q1354", ... }
-        self.entity_index = dict(zip(df['Bangla_Wikipedia_Title'], df['Wikidata_ID']))
-        print(f"✅ Indexed {len(self.entity_index)} entities for the Agent.")
+        # Triton configuration
+        self.triton_url = "http://localhost:7000/v2/models/gemma_embedding/infer" # Update if needed
+        
+        # Connect to existing Elasticsearch container
+        self.es = Elasticsearch(es_url)
+        print("🔗 Connected to Elasticsearch and Triton Inference Server.")
 
-    def search_entity(self, entity_name: str) -> str:
-        """
-        The actual function the LLM will call. 
-        It takes a text name, finds the Q-ID, and queries the local graph.
-        """
-        print(f"\n[TOOL EXECUTION] LLM requested search for: '{entity_name}'")
-        
-        # 1. Fuzzy Matching (In case the LLM misspells the Bengali title)
-        matches = difflib.get_close_matches(entity_name, self.entity_index.keys(), n=1, cutoff=0.6)
-        
-        if not matches:
-            return json.dumps({"error": f"Entity '{entity_name}' not found in the local database."})
-            
-        exact_match = matches[0]
-        q_id = self.entity_index[exact_match]
-        print(f"[TOOL EXECUTION] Mapped '{entity_name}' -> '{exact_match}' ({q_id})")
+    def get_triton_embedding(self, text: str) -> list:
+        """Fetches embeddings from the local Triton Inference Server."""
+        payload = {
+            "inputs": [
+                {
+                    "name": "text", # Update if your input tensor is named differently
+                    "shape": [1, 1],
+                    "datatype": "BYTES",
+                    "data": [[text]]
+                }
+            ]
+        }
+        try:
+            response = requests.post(self.triton_url, json=payload, timeout=2.0)
+            if response.status_code == 200:
+                outputs = response.json().get("outputs", [])
+                if outputs:
+                    return outputs[0].get("data", [])
+            return []
+        except:
+            return []
 
-        # 2. Hit the local QLever Database (Sub-500ms guaranteed)
-        query = f"SELECT ?predicate ?object WHERE {{ <http://www.wikidata.org/entity/{q_id}> ?predicate ?object }}"
+    def search_entity(self, user_query: str) -> str:
+        print(f"\n[GraphRAG] 1. Initiating Search for: '{user_query}'")
+        
+        # --- STEP 1: EMBED QUERY VIA TRITON ---
+        # --- MODULAR CALL ---
+        query_vector = self.get_triton_embedding(user_query)
+        
+        if not query_vector:
+            return "RESULT_NOT_FOUND: Failed to generate embedding from Triton."
+
+        # --- TRUE PARALLEL HYBRID SEARCH (ES 8.x) ---
+        es_query = {
+            "size": 1, # We only need the top result for the agent
+            "knn": {
+                "field": "text_vector",
+                "query_vector": query_vector,
+                "k": 10,
+                "num_candidates": 100,
+                "boost": 0.8 # Semantic Meaning acts as the primary driver (80%)
+            },
+            "query": {
+                "match": {
+                    "title": {
+                        "query": user_query,
+                        "fuzziness": "AUTO",
+                        "boost": 0.2 # Exact text match acts as a secondary booster (20%)
+                    }
+                }
+            }
+        }
         
         try:
-            response = requests.get(
+            es_response = self.es.search(index=self.index_name, body=es_query)
+
+            hits = es_response['hits']['hits']
+            
+            if not hits:
+                print("❌ [GraphRAG] Miss! Triggering Kill Switch.")
+                return "RESULT_NOT_FOUND"
+                
+            best_match = hits[0]['_source']
+            entity_title = best_match['title']
+            q_id = best_match['q_id']
+            summary_text = best_match['summary']
+            
+            print(f"[GraphRAG] 2. Found Context: {entity_title} ({q_id})")
+            
+        except Exception as e:
+            return f"RESULT_NOT_FOUND: ES Error: {e}"
+
+        # --- STEP 3: EXACT GRAPH RETRIEVAL (QLEVER) ---
+        print(f"[GraphRAG] 3. Pinging Graph for Edges...")
+        sparql_query = f"SELECT ?predicate ?object WHERE {{ <http://www.wikidata.org/entity/{q_id}> ?predicate ?object }}"
+        
+        clean_edges = []
+        try:
+            ql_response = requests.get(
                 self.qlever_url, 
-                params={"query": query}, 
+                params={"query": sparql_query}, 
                 headers={"Accept": "application/sparql-results+json"},
-                timeout=2.0
+                timeout=1.0 
             )
             
-            if response.status_code == 200:
-                results = response.json()['results']['bindings']
-                
-                # Clean up the output so the LLM doesn't waste context window on long URIs
-                clean_edges = []
+            if ql_response.status_code == 200:
+                results = ql_response.json()['results']['bindings']
                 for row in results:
                     p = row['predicate']['value'].split('/')[-1]
                     o = row['object']['value'].split('/')[-1]
                     clean_edges.append({p: o})
-                    
-                return json.dumps({
-                    "entity_found": exact_match,
-                    "q_id": q_id,
-                    "relational_edges": clean_edges
-                })
-            else:
-                return json.dumps({"error": f"QLever DB Error: {response.status_code}"})
-                
         except Exception as e:
-            return json.dumps({"error": f"Database connection failed: {str(e)}"})
+            print(f"⚠️ QLever ping failed. Relying strictly on ES Summary.")
 
-# For isolated testing:
-if __name__ == "__main__":
-    tool = QLeverWikipediaTool()
-    print(tool.search_entity("ঢাকা"))
+        # --- STEP 4: THE COMBO PAYLOAD ---
+        payload = {
+            "entity_matched": entity_title,
+            "semantic_summary": summary_text, 
+            "verified_graph_facts": clean_edges[:20] 
+        }
+        
+        return json.dumps(payload, ensure_ascii=False)
+
+# Make sure this matches how agent.py imports it!
+kg_tool = GraphRAGWikipediaTool()

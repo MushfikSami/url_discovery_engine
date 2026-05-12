@@ -12,6 +12,7 @@ def verify_entity(search_term: str):
     print(f"\n🔍 Searching for: '{search_term}'...")
     
     # --- PHASE 1: Check the CSV Index ---
+    # --- PHASE 1: Check the CSV Index ---
     try:
         df = pd.read_csv(CSV_PATH)
         entity_index = dict(zip(df['Bangla_Wikipedia_Title'], df['Wikidata_ID']))
@@ -19,21 +20,32 @@ def verify_entity(search_term: str):
         print(f"❌ Error: Could not find CSV at {CSV_PATH}")
         return
 
-    # Fuzzy match to handle slight misspellings
-    matches = difflib.get_close_matches(search_term, entity_index.keys(), n=1, cutoff=0.6)
-    
-    if not matches:
-        print(f"❌ Result: '{search_term}' does NOT exist in your local Wikipedia index.")
-        return
+    # 1. First, try an exact match
+    if search_term in entity_index:
+        exact_match = search_term
+        print("✅ Exact Match Found!")
+    else:
+        # 2. If no exact match, try a STRICT fuzzy match (85% similarity instead of 60%)
+        matches = difflib.get_close_matches(search_term, entity_index.keys(), n=1, cutoff=0.85)
         
-    exact_match = matches[0]
+        if not matches:
+            print(f"❌ Result: '{search_term}' does NOT exist in your local Wikipedia index.")
+            print("   (It might be located at Depth 3 or 4 of the Wikipedia category tree).")
+            return
+            
+        exact_match = matches[0]
+        print(f"⚠️ Exact match not found. Autocorrected to closest strict match: '{exact_match}'")
+        
     q_id = entity_index[exact_match]
     
-    print("✅ Found in Index!")
-    print(f"   Name:  {exact_match}")
-    print(f"   Q-ID:  {q_id}")
-    print(f"   Link:  https://www.wikidata.org/wiki/{q_id}")
+    # Construct the exact Bengali Wikipedia URL
+    wiki_url = f"https://bn.wikipedia.org/wiki/{exact_match.replace(' ', '_')}"
     
+    print("✅ Found in Index!")
+    print(f"   Name:     {exact_match}")
+    print(f"   Q-ID:     {q_id}")
+    print(f"   Wikidata: https://www.wikidata.org/wiki/{q_id}")
+    print(f"   Article:  {wiki_url}") # <--- Your new trace-back link!    
     # --- PHASE 2: Check the Local QLever Database ---
     print("\n⚡ Pinging local QLever database for facts...")
     

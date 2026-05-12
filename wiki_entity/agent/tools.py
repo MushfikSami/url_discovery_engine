@@ -1,9 +1,9 @@
 import json
-from knowledge_tool import QLeverWikipediaTool
+from knowledge_tool import GraphRAGWikipediaTool
 
 # Initialize our actual local QLever database tool
 # (This will load the CSV into RAM when the server starts)
-kg_tool = QLeverWikipediaTool(csv_path="./data/bangladesh_bn_wiki_true_massive.csv", qlever_url="http://localhost:7005")
+kg_tool = GraphRAGWikipediaTool()
 
 def search_local_wikipedia_graph(entity_name: str) -> str:
     """The actual python function executed by the LLM."""
