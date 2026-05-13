@@ -52,6 +52,7 @@ class GraphRAGWikipediaTool:
         # --- TRUE PARALLEL HYBRID SEARCH (ES 8.x) ---
         es_query = {
             "size": 1, # We only need the top result for the agent
+            "min_score": 1.5, # Filter out very weak matches
             "knn": {
                 "field": "text_vector",
                 "query_vector": query_vector,
