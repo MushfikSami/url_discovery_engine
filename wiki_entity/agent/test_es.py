@@ -15,7 +15,7 @@ def manual_check():
     
     # 2. Run a Hybrid Test Query
     # Let's test with a typo to prove the hybrid engine works
-    test_query = "শেখ মজিবুর রহমান" 
+    test_query = "বাংলাদেশের প্রধানমন্ত্রী কে?"  
     print(f"🔍 Testing Hybrid Search for: '{test_query}'")
     
     # Generate vector using your modular engine

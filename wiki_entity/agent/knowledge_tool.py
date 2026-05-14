@@ -1,83 +1,134 @@
-import requests
 import json
 from elasticsearch import Elasticsearch
+from neo4j import GraphDatabase
+import requests
 from transformers import AutoTokenizer
-import numpy as np # (Make sure to import numpy as well)
-tokenizer = AutoTokenizer.from_pretrained("google/embeddinggemma-300m")
-
+import numpy as np
 class GraphRAGWikipediaTool:
-    def __init__(self, es_url="http://localhost:9200", qlever_url="http://localhost:7005"):
-        self.qlever_url = qlever_url
+    def __init__(self, es_url="http://localhost:9200", neo4j_uri =  "bolt+ssc://localhost:7687", neo4j_user="neo4j", neo4j_pass="8QjEHYATrDaotYHm4v0MgZH9+0qzbCnGU+NzGB4DTQ0="):
+        # 1. Initialize Elasticsearch
         self.index_name = "wikipedia_bn_graphrag"
-        
-        # Triton configuration
-        self.triton_url = "http://localhost:7000/v2/models/gemma_embedding/infer" # Update if needed
-        
-        # Connect to existing Elasticsearch container
         self.es = Elasticsearch(es_url)
-        print("🔗 Connected to Elasticsearch and Triton Inference Server.")
+        
+        # 2. Initialize Neo4j Driver
+        self.neo4j_driver = GraphDatabase.driver(neo4j_uri, auth=(neo4j_user, neo4j_pass))
+        self.triton_url = "http://localhost:7000/v2/models/gemma_embedding/infer"
+        self.tokenizer = AutoTokenizer.from_pretrained("google/embeddinggemma-300m")
+        print("🔗 Connected to Elasticsearch (Vector) and Neo4j (Graph).")
+
+    def close(self):
+        """Always good practice to close the Neo4j driver when shutting down."""
+        self.neo4j_driver.close()
 
     def get_triton_embedding(self, text: str) -> list:
-        """Fetches embeddings from the local Triton Inference Server."""
+        """Tokenizes text and fetches embeddings from Triton."""
+        TRITON_URL = "http://localhost:7000/v2/models/gemma_embedding/infer"
+        
+        # 1. Tokenize the text locally
+        encoded = self.tokenizer(
+            text, 
+            padding=True, 
+            truncation=True, 
+            max_length=512, 
+            return_tensors="np"
+        )
+        
+        input_ids = encoded["input_ids"].astype(np.int64).tolist()
+        attention_mask = encoded["attention_mask"].astype(np.int64).tolist()
+
+        # 2. Build the precise ONNX payload Triton expects
         payload = {
             "inputs": [
                 {
-                    "name": "text", # Update if your input tensor is named differently
-                    "shape": [1, 1],
-                    "datatype": "BYTES",
-                    "data": [[text]]
+                    "name": "input_ids",
+                    "shape": [len(input_ids), len(input_ids[0])],
+                    "datatype": "INT64",
+                    "data": input_ids
+                },
+                {
+                    "name": "attention_mask",
+                    "shape": [len(attention_mask), len(attention_mask[0])],
+                    "datatype": "INT64",
+                    "data": attention_mask
                 }
             ]
         }
+        
+        # 3. Send to Triton and extract the 768-dim vector
+        # 3. Send to Triton
         try:
-            response = requests.post(self.triton_url, json=payload, timeout=2.0)
-            if response.status_code == 200:
-                outputs = response.json().get("outputs", [])
-                if outputs:
-                    return outputs[0].get("data", [])
+            response = requests.post(TRITON_URL, json=payload, timeout=5.0)
+            response.raise_for_status()
+            
+            outputs = response.json().get("outputs", [])
+            for output in outputs:
+                if output["name"] == "sentence_embedding":
+                    data = output["data"]
+                    
+                    # Check if Triton flattened it (a simple list of 768 floats)
+                    if len(data) == 768:
+                        return data
+                    # Check if it's nested (a list containing a list of 768 floats)
+                    elif len(data) > 0 and isinstance(data[0], list):
+                        return data[0]
+                        
             return []
-        except:
+        except Exception as e:
+            print(f"⚠️ Triton Embedding Error: {e}")
             return []
-
+        
     def search_entity(self, user_query: str) -> str:
         print(f"\n[GraphRAG] 1. Initiating Search for: '{user_query}'")
         
-        # --- STEP 1: EMBED QUERY VIA TRITON ---
-        # --- MODULAR CALL ---
         query_vector = self.get_triton_embedding(user_query)
+        
+        # ADD THIS DEBUG LINE:
+        print(f"🐛 [DEBUG] Triton Vector Length: {len(query_vector)}")
         
         if not query_vector:
             return "RESULT_NOT_FOUND: Failed to generate embedding from Triton."
-
         # --- TRUE PARALLEL HYBRID SEARCH (ES 8.x) ---
         es_query = {
-            "size": 1, # We only need the top result for the agent
-            "min_score": 1.5, # Filter out very weak matches
+            "size": 1,
+            "min_score": 0.5, # একটু কমিয়ে রাখুন যাতে সেফলি ডেটা পায়
             "knn": {
                 "field": "text_vector",
                 "query_vector": query_vector,
                 "k": 10,
                 "num_candidates": 100,
-                "boost": 0.8 # Semantic Meaning acts as the primary driver (80%)
+                "boost": 0.5  # ভেক্টরের পাওয়ার একটু কমানো হলো
             },
             "query": {
-                "match": {
-                    "title": {
-                        "query": user_query,
-                        "fuzziness": "AUTO",
-                        "boost": 0.2 # Exact text match acts as a secondary booster (20%)
-                    }
+                "bool": {
+                    "should": [
+                        {
+                            "match_phrase": { # এক্স্যাক্ট ফ্রেজ ম্যাচিং
+                                "title": {
+                                    "query": user_query,
+                                    "boost": 5.0 # 👈 এক্স্যাক্ট টাইটেলকে বিশাল পাওয়ার দেওয়া হলো
+                                }
+                            }
+                        },
+                        {
+                            "match": {
+                                "title": {
+                                    "query": user_query,
+                                    "fuzziness": "AUTO",
+                                    "boost": 1.0
+                                }
+                            }
+                        }
+                    ]
                 }
             }
         }
         
         try:
             es_response = self.es.search(index=self.index_name, body=es_query)
-
             hits = es_response['hits']['hits']
             
             if not hits:
-                print("❌ [GraphRAG] Miss! Triggering Kill Switch.")
+                print("❌ [GraphRAG] Miss! Entity not found or score too low.")
                 return "RESULT_NOT_FOUND"
                 
             best_match = hits[0]['_source']
@@ -90,36 +141,40 @@ class GraphRAGWikipediaTool:
         except Exception as e:
             return f"RESULT_NOT_FOUND: ES Error: {e}"
 
-        # --- STEP 3: EXACT GRAPH RETRIEVAL (QLEVER) ---
-        print(f"[GraphRAG] 3. Pinging Graph for Edges...")
-        sparql_query = f"SELECT ?predicate ?object WHERE {{ <http://www.wikidata.org/entity/{q_id}> ?predicate ?object }}"
-        
+        # --- EXACT GRAPH RETRIEVAL (NEO4J) ---
+        print(f"[GraphRAG] 3. Pinging Neo4j for Edges...")
         clean_edges = []
+        
+        # Define the Cypher Query
+        # NOTE: Update 'qid' and 'label' if your Neo4j property names are different!
+        cypher_query = """
+        MATCH (subject {qid: $target_qid})-[rel]->(object)
+        RETURN type(rel) AS predicate, object.label AS object_name, object.qid AS object_qid
+        LIMIT 20
+        """
+        
         try:
-            ql_response = requests.get(
-                self.qlever_url, 
-                params={"query": sparql_query}, 
-                headers={"Accept": "application/sparql-results+json"},
-                timeout=1.0 
-            )
-            
-            if ql_response.status_code == 200:
-                results = ql_response.json()['results']['bindings']
-                for row in results:
-                    p = row['predicate']['value'].split('/')[-1]
-                    o = row['object']['value'].split('/')[-1]
-                    clean_edges.append({p: o})
+            # Open a session and run the query
+            with self.neo4j_driver.session() as session:
+                result = session.run(cypher_query, target_qid=q_id)
+                
+                for record in result:
+                    # Format it exactly how the LLM expects it based on your prompt
+                    p_node = record["predicate"]
+                    o_node = record["object_name"] or record["object_qid"] # Fallback to QID if label is missing
+                    clean_edges.append({f"Predicate ({p_node})": o_node})
+                    
         except Exception as e:
-            print(f"⚠️ QLever ping failed. Relying strictly on ES Summary.")
+            print(f"⚠️ Neo4j ping failed: {e}. Relying strictly on ES Summary.")
 
-        # --- STEP 4: THE COMBO PAYLOAD ---
+        # --- THE COMBO PAYLOAD ---
         payload = {
             "entity_matched": entity_title,
             "semantic_summary": summary_text, 
-            "verified_graph_facts": clean_edges[:20] 
+            "verified_graph_facts": clean_edges 
         }
         
         return json.dumps(payload, ensure_ascii=False)
 
-# Make sure this matches how agent.py imports it!
-kg_tool = GraphRAGWikipediaTool()
+# Instantiated for agent.py (Update credentials here!)
+kg_tool = GraphRAGWikipediaTool(neo4j_uri= "bolt+ssc://localhost:7687", neo4j_user="neo4j", neo4j_pass="8QjEHYATrDaotYHm4v0MgZH9+0qzbCnGU+NzGB4DTQ0=")

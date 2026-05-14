@@ -7,7 +7,7 @@ kg_tool = GraphRAGWikipediaTool()
 
 def search_local_wikipedia_graph(entity_name: str) -> str:
     """The actual python function executed by the LLM."""
-    print(f"🔧 [TOOL TRIGGERED] Searching QLever Graph for: {entity_name}")
+    print(f"🔧 [TOOL TRIGGERED] Searching Neo4j & ES Knowledge Graph for: {entity_name}")
     # Execute the real database call
     result = kg_tool.search_entity(entity_name)
     return f"[System Observation]: {result}"
