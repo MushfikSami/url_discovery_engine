@@ -140,4 +140,4 @@ def run_threaded_crawler(base_category, max_depth=3, max_workers=5):
 
 if __name__ == "__main__":
     # 5 workers is the absolute limit for safety. 
-    run_threaded_crawler("বিষয়শ্রেণী:বাংলাদেশ", max_depth=2, max_workers=5)
+    run_threaded_crawler("বিষয়শ্রেণী:বাংলাদেশ", max_depth=3, max_workers=5)
