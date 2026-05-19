@@ -1,0 +1,22 @@
+# searxng/settings.yml
+
+use_default_settings: true
+
+server:
+  port: 8080
+  bind_address: "0.0.0.0"
+  secret_key: "replace_this_with_a_random_string_if_exposing_to_web"
+
+search:
+  safe_search: 0
+  autocomplete: ""
+  default_engine: wikipedia
+  formats:
+    - html
+    - json  # CRITICAL: This allows your Python script to read the results
+
+engines:
+  - name: wikipedia
+    engine: wikipedia
+    shortcut: wp
+    disabled: False
