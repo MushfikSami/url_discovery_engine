@@ -1,0 +1,92 @@
+Timestamp,Original_Query,Optimized_Query,Target_URL,Fanout_Time_sec,Search_Time_sec,Parse_Time_sec,Total_Time_sec,Markdown_Length,Status
+2026-05-20 14:42:39,When was Dhaka University established?,University of Dhaka,https://en.wikipedia.org/wiki/University_of_Dhaka,0.159,0.196,0.636,0.991,89476,Success
+2026-05-20 14:42:46,Who is the current President of Bangladesh?,List of presidents of Bangladesh,https://en.wikipedia.org/wiki/List_of_presidents_of_Bangladesh,0.089,0.466,0.501,1.056,83377,Success
+2026-05-20 14:42:51,What is the national flower of Bangladesh?,National flower of Bangladesh,https://en.wikipedia.org/wiki/Nymphaea_pubescens,0.081,0.16,0.365,0.606,28295,Success
+2026-05-20 14:42:57,Tell me about the Padma Bridge.,Padma Bridge,https://en.wikipedia.org/wiki/Padma_Bridge,0.071,0.173,0.576,0.82,104086,Success
+2026-05-20 14:43:03,Where is the Sundarbans located?,Sundarbans,https://en.wikipedia.org/wiki/Sundarbans,0.081,0.164,1.075,1.32,230117,Success
+2026-05-20 14:43:09,What is the official currency of Bangladesh?,Bangladeshi taka,https://en.wikipedia.org/wiki/Bangladeshi_taka,0.09,0.164,0.644,0.897,159823,Success
+2026-05-20 14:43:16,Who wrote the national anthem of Bangladesh?,Rabindranath Tagore,https://en.wikipedia.org/wiki/Rabindranath_Tagore,0.109,0.174,1.686,1.97,276834,Success
+2026-05-20 14:43:21,Tell me about the history of Coxs Bazar.,Cox's Bazar history,,0.1,0.16,0.0,0.26,0,Failed at Search (No URL)
+2026-05-20 14:43:22,Who is Kazi Nazrul Islam?,Kazi Nazrul Islam,https://en.wikipedia.org/wiki/Kazi_Nazrul_Islam,0.088,0.059,0.904,1.051,218453,Success
+2026-05-20 14:43:29,When did the Liberation War of Bangladesh start?,Liberation War of Bangladesh,https://en.wikipedia.org/wiki/Bangladesh_Liberation_War,0.099,0.163,1.567,1.828,328554,Success
+2026-05-20 14:45:02,সেন্ট মার্টিন দ্বীপ কোথায় অবস্থিত?,সেন্ট মার্টিন দ্বীপ,,0.214,0.171,0.0,0.385,0,Failed at Search (No URL)
+2026-05-20 14:45:03,শহীদ মিনার কে নকশা করেছেন?,শহীদ মিনার,https://en.wikipedia.org/wiki/Shaheed_Minar,0.108,0.063,0.277,0.448,3992,Success
+2026-05-20 14:45:08,সুন্দরবনে কোন বিখ্যাত প্রাণী বাস করে?,সুন্দরবনের প্রাণী,,0.138,0.271,0.0,0.408,0,Failed at Search (No URL)
+2026-05-20 14:45:10,ঢাকা শহরের পুরনো নাম কী ছিল?,ঢাকা,https://en.wikipedia.org/wiki/Dhaka,0.061,0.064,1.781,1.906,366002,Success
+2026-05-20 14:45:16,জাতীয় সংসদ ভবনের স্থপতি কে?,Louis Kahn,https://en.wikipedia.org/wiki/Louis_Kahn,0.062,0.163,0.535,0.76,86967,Success
+2026-05-20 14:45:21,বাংলাদেশের স্বাধীনতা দিবস কবে?,বাংলাদেশের স্বাধীনতা দিবস,,0.167,0.179,0.0,0.346,0,Failed at Search (No URL)
+2026-05-20 14:45:21,কর্ণফুলী নদী কোথায় অবস্থিত?,কর্ণফুলী নদী,,0.116,0.086,0.0,0.202,0,Failed at Search (No URL)
+2026-05-20 14:45:22,বাংলাদেশের সর্বোচ্চ পর্বতশৃঙ্গ কোনটি?,বাংলাদেশের সর্বোচ্চ পর্বতশৃঙ্গ,,0.191,0.056,0.0,0.247,0,Failed at Search (No URL)
+2026-05-20 14:45:22,লালবাগ কেল্লা কে নির্মাণ করেন?,লালবাগ কেল্লা,,0.106,0.061,0.0,0.167,0,Failed at Search (No URL)
+2026-05-20 14:46:14,Who designed the National Martyrs' Monument?,National Martyrs' Monument (Bangladesh) architect,,0.212,0.563,0.0,0.775,0,Failed at Search (No URL)
+2026-05-20 14:46:16,What is the main seaport of Bangladesh?,Chittagong Port,https://en.wikipedia.org/wiki/Port_of_Chittagong,0.089,1.11,0.807,2.006,101295,Success
+2026-05-20 14:46:24,Tell me about the Bengal famine of 1943.,Bengal famine of 1943,https://en.wikipedia.org/wiki/Bengal_famine_of_1943,0.137,0.641,2.255,3.033,393705,Success
+2026-05-20 14:46:30,Who was the founder of the Mughal Empire?,Babur,https://en.wikipedia.org/wiki/Babur,0.07,0.238,1.016,1.325,186580,Success
+2026-05-20 14:46:36,What is the national fruit of Bangladesh?,List of national fruits,https://en.wikipedia.org/wiki/List_of_national_fruits,0.08,0.45,0.35,0.881,35345,Success
+2026-05-20 14:46:43,Who is the author of the novel Pather Panchali?,Pather Panchali,https://en.wikipedia.org/wiki/Pather_Panchali,0.089,0.429,1.173,1.691,182358,Success
+2026-05-20 14:46:49,Where is the archaeological site Mahasthangarh located?,Mahasthangarh,https://en.wikipedia.org/wiki/Mahasthangarh,0.091,0.44,0.507,1.038,86924,Success
+2026-05-20 14:46:55,What is the largest mangrove forest in the world?,Sundarbans,https://en.wikipedia.org/wiki/Sundarbans,0.08,0.163,0.829,1.072,230117,Success
+2026-05-20 14:47:01,Tell me about the history of the Bengali language movement.,Bengali language movement,https://en.wikipedia.org/wiki/Bengali_language_movement,0.089,0.414,0.816,1.319,164017,Success
+2026-05-20 14:48:41,পলাশীর যুদ্ধ কত সালে সংঘটিত হয়েছিল?,পলাশীর যুদ্ধ,,0.169,1.072,0.0,1.241,0,Failed at Search (No URL)
+2026-05-20 14:48:41,বাংলাদেশের কোন জেলাকে চায়ের দেশ বলা হয়?,চা বাগান বাংলাদেশ,,0.099,0.439,0.0,0.538,0,Failed at Search (No URL)
+2026-05-20 14:48:42,বঙ্গবন্ধু স্যাটেলাইট-১ সম্পর্কে বিস্তারিত কিছু তথ্য দিন।,বঙ্গবন্ধু স্যাটেলাইট-১,,0.174,0.784,0.0,0.957,0,Failed at Search (No URL)
+2026-05-20 14:48:43,রোকেয়া সাখাওয়াত হোসেন কেন বিখ্যাত?,রোকেয়া সাখাওয়াত হোসেন,,0.155,0.489,0.0,0.644,0,Failed at Search (No URL)
+2026-05-20 14:48:44,ময়নামতি কোথায় অবস্থিত এবং এর ইতিহাস কী?,ময়নামতি,,0.088,1.063,0.0,1.152,0,Failed at Search (No URL)
+2026-05-20 14:48:46,বাংলাদেশের বর্তমান সংবিধান কবে গৃহীত হয়?,সংবিধান,,0.08,2.185,0.0,2.265,0,Failed at Search (No URL)
+2026-05-20 14:48:47,হাতিরঝিল প্রজেক্ট সম্পর্কে জানতে চাই।,হাতিরঝিল প্রজেক্ট,,0.128,0.871,0.0,0.999,0,Failed at Search (No URL)
+2026-05-20 14:48:48,বাউল সম্রাট লালন শাহের জীবনকাহিনী সংক্ষেপে বলুন।,লালন শাহ,,0.089,0.729,0.0,0.818,0,Failed at Search (No URL)
+2026-05-20 14:48:49,রূপপুর পারমাণবিক বিদ্যুৎ কেন্দ্র কোথায় তৈরি হচ্ছে?,রূপপুর পারমাণবিক বিদ্যুৎ কেন্দ্র,,0.202,0.853,0.0,1.055,0,Failed at Search (No URL)
+2026-05-20 14:49:30,Tell me about the Independence Day Award of Bangladesh.,Independence Day Award,https://en.wikipedia.org/wiki/Independence_Award,0.157,0.637,0.602,1.396,26068,Success
+2026-05-20 14:49:37,Who won the Nobel Peace Prize from Bangladesh?,List of Nobel laureates from Bangladesh,,0.109,1.661,0.0,1.77,0,Failed at Search (No URL)
+2026-05-20 14:49:38,What is the total length of the Jamuna Bridge?,Jamuna Bridge,https://en.wikipedia.org/wiki/Jamuna_Bridge,0.07,0.581,0.504,1.155,102777,Success
+2026-05-20 14:49:44,Explain the significance of the 21st of February in Bangladesh.,Language Movement Day Bangladesh,,0.081,0.917,0.0,0.998,0,Failed at Search (No URL)
+2026-05-20 14:49:45,What is the national sport of Bangladesh?,List of national sports of Bangladesh,,0.099,0.865,0.0,0.963,0,Failed at Search (No URL)
+2026-05-20 14:49:47,Who was the commander-in-chief of the Mukti Bahini?,Mukti Bahini,https://en.wikipedia.org/wiki/Mukti_Bahini,0.079,0.456,0.981,1.516,142734,Success
+2026-05-20 14:49:54,Where is Foy's Lake located?,Foy's Lake,https://en.wikipedia.org/wiki/Foy's_Lake,0.08,0.647,1.07,1.797,10568,Success
+2026-05-20 14:50:01,What is the main ingredient in Panta Bhat?,Panta bhat,https://en.wikipedia.org/wiki/Panta_bhat,0.08,1.742,1.032,2.854,82761,Success
+2026-05-20 14:50:08,Tell me about the history of Rajshahi University.,Rajshahi University,https://en.wikipedia.org/wiki/University_of_Rajshahi,0.09,0.421,0.613,1.124,114088,Success
+2026-05-20 14:50:44,What is the largest island in Bangladesh?,Sajnekhali Island,,0.183,0.86,0.0,1.043,0,Failed at Search (No URL)
+2026-05-20 14:50:46,Give me a brief overview of the economy of Bangladesh.,Economy of Bangladesh,https://en.wikipedia.org/wiki/Economy_of_Bangladesh,0.079,0.318,1.646,2.043,402966,Success
+2026-05-20 14:50:54,Who was the first female Prime Minister of Bangladesh?,খালেদা জিয়া,,0.099,3.004,0.0,3.103,0,Failed at Search (No URL)
+2026-05-20 14:50:54,What is the primary role of the Bangladesh Bank?,Bangladesh Bank,,0.07,0.112,0.0,0.182,0,Failed at Search (No URL)
+2026-05-20 14:50:54,Give me information about the Somapura Mahavihara.,Somapura Mahavihara,,0.097,0.002,0.0,0.099,0,Failed at Search (No URL)
+2026-05-20 14:50:55,Who wrote the famous Bengali poem 'Bidrohi'?,Bidrohi,,0.069,0.002,0.0,0.072,0,Failed at Search (No URL)
+2026-05-20 14:50:55,What is the total border length between Bangladesh and India?,Bangladesh–India border,,0.089,0.002,0.0,0.091,0,Failed at Search (No URL)
+2026-05-20 14:50:55,Tell me about the Chittagong Hill Tracts Peace Accord.,Chittagong Hill Tracts Peace Accord,,0.127,0.002,0.0,0.129,0,Failed at Search (No URL)
+2026-05-20 14:50:55,What is the significance of the Suhrawardy Udyan?,Suhrawardy Udyan,,0.098,0.006,0.0,0.104,0,Failed at Search (No URL)
+2026-05-20 14:51:28,কান্তজীর মন্দির কোন জেলায় অবস্থিত এবং এটি কে বানিয়েছিলেন?,কান্তজীর মন্দির,,0.197,1.241,0.0,1.438,0,Failed at Search (No URL)
+2026-05-20 14:51:29,বাংলার বারো ভূঁইয়াদের নেতা কে ছিলেন?,বাংলার বারো ভূঁইয়া,,0.157,0.488,0.0,0.646,0,Failed at Search (No URL)
+2026-05-20 14:51:30,"আমাকে একটু সাহায্য করুন, ছয় দফা দাবি কবে এবং কেন উত্থাপন করা হয়?",ছয় দফা,,0.09,0.589,0.0,0.678,0,Failed at Search (No URL)
+2026-05-20 14:51:31,বাংলাদেশের মুক্তিযুদ্ধের সময় দেশকে কয়টি সেক্টরে ভাগ করা হয়েছিল?,বাংলাদেশের মুক্তিযুদ্ধের সেক্টর,,0.174,0.717,0.0,0.891,0,Failed at Search (No URL)
+2026-05-20 14:51:31,বিখ্যাত ভাওয়াইয়া গায়ক আব্বাসউদ্দীন আহমদ কোথায় জন্মগ্রহণ করেন?,আব্বাসউদ্দীন আহমদ,,0.146,0.485,0.0,0.631,0,Failed at Search (No URL)
+2026-05-20 14:51:32,বাংলাদেশের শেয়ার বাজার নিয়ন্ত্রণকারী মূল সংস্থার নাম কী?,বাংলাদেশ সিকিউরিটিজ অ্যান্ড এক্সচেঞ্জ কমিশ,,0.221,0.579,0.0,0.799,0,Failed at Search (No URL)
+2026-05-20 14:51:33,সুন্দরবনের সুন্দরী গাছের প্রধান বৈশিষ্ট্য কী কী?,সুন্দরী গাছ,,0.118,0.908,0.0,1.025,0,Failed at Search (No URL)
+2026-05-20 14:51:34,"মহাস্থানগড়ের পুরোনো নাম যে পুণ্ড্রবর্ধন ছিল, সেটার ইতিহাস কী?",পুণ্ড্রবর্ধন,,0.128,0.961,0.0,1.089,0,Failed at Search (No URL)
+2026-05-20 14:51:35,"আচ্ছা, বাংলাদেশের জাতীয় চিড়িয়াখানা কোথায় অবস্থিত?",বাংলাদেশ জাতীয় চিড়িয়াখানা,,0.165,0.627,0.0,0.792,0,Failed at Search (No URL)
+2026-05-20 14:52:00,গ্রামীণ ব্যাংকের প্রতিষ্ঠাতা ড. মুহাম্মদ ইউনূস সম্পর্কে কিছু বলুন।,মুহাম্মদ ইউনূস,https://en.wikipedia.org/wiki/Muhammad_Yunus,0.219,2.287,1.134,3.64,258956,Success
+2026-05-20 14:52:06,বাংলাদেশ ও মিয়ানমারের সীমানার মধ্যে দিয়ে কোন নদী প্রবাহিত হয়েছে?,বাংলাদেশ-মিয়ানমার সীমান্তবর্তী নদী,,0.223,1.192,0.0,1.415,0,Failed at Search (No URL)
+2026-05-20 14:52:07,ঢাকার বায়তুল মোকাররম জাতীয় মসজিদের মূল নকশা কে করেছিলেন?,বায়তুল মোকাররম জাতীয় মসজিদের স্থপতি,,0.22,0.668,0.0,0.889,0,Failed at Search (No URL)
+2026-05-20 14:52:08,বাংলাদেশের সবচেয়ে বড় হাওর হাকালুকি হাওর সম্পর্কে তথ্য দিন।,হাকালুকি হাওর,,0.128,0.839,0.0,0.967,0,Failed at Search (No URL)
+2026-05-20 14:52:09,ব্রিটিশ বিরোধী আন্দোলনে তিতুমীরের বাঁশের কেল্লার ভূমিকা কী ছিল?,বীর তিতুমীর,,0.1,0.95,0.0,1.05,0,Failed at Search (No URL)
+2026-05-20 14:52:11,শিল্প ও সাহিত্যে অবদানের জন্য একুশে পদক কেন দেওয়া হয়?,একুশে পদক,https://en.wikipedia.org/wiki/Ekushey_Padak,0.118,0.498,0.698,1.314,53661,Success
+2026-05-20 14:52:17,ঢাকার মেট্রোরেল প্রকল্প কবে সর্বসাধারণের জন্য উদ্বোধন করা হয়?,ঢাকা মেট্রোরেল,,0.11,1.633,0.0,1.744,0,Failed at Search (No URL)
+2026-05-20 14:52:18,বাংলাদেশের সর্বোচ্চ বেসামরিক সম্মাননা স্বাধীনতা পদক সম্পর্কে জানতে চাই।,স্বাধীনতা পদক,,0.128,0.395,0.0,0.523,0,Failed at Search (No URL)
+2026-05-20 14:52:19,"ভাই, আপনি কি বলতে পারবেন লালন শাহের আখড়া কোথায় অবস্থিত?",লালন শাহের আখড়া,,0.127,0.912,0.0,1.039,0,Failed at Search (No URL)
+2026-05-20 14:55:19,Tell me about the construction of the Rooppur Nuclear Power Plant.,Rooppur Nuclear Power Plant construction,,0.19,0.166,0.0,0.356,0,Failed at Search (No URL)
+2026-05-20 14:55:19,Who is the current governor of Bangladesh Bank?,Governor of Bangladesh Bank,https://en.wikipedia.org/wiki/Governor_of_Bangladesh_Bank,0.088,0.058,0.295,0.44,8513,Success
+2026-05-20 14:55:24,What is the history of the Ahsan Manzil museum?,Ahsan Manzil history,,0.099,0.16,0.0,0.259,0,Failed at Search (No URL)
+2026-05-20 14:55:25,Explain the cultural importance of Pohela Boishakh.,Pohela Boishakh,https://en.wikipedia.org/wiki/Pohela_Boishakh,0.098,0.059,0.695,0.852,137564,Success
+2026-05-20 14:55:31,Where is the Kuakata beach located?,Kuakata,https://en.wikipedia.org/wiki/Kuakata,0.072,0.427,0.329,0.827,16479,Success
+2026-05-20 14:55:37,Who designed the Jatiya Sangsad Bhaban?,Jatiya Sangsad Bhaban,https://en.wikipedia.org/wiki/Jatiya_Sangsad_Bhaban,0.118,0.169,0.49,0.777,79989,Success
+2026-05-20 14:55:43,What are the main features of the Meghna River?,Meghna River,https://en.wikipedia.org/wiki/Meghna_River,0.08,0.442,0.462,0.984,63553,Success
+2026-05-20 14:55:49,Tell me about the Bangladesh Awami League's founding.,Bangladesh Awami League,https://en.wikipedia.org/wiki/Awami_League,0.089,0.423,1.179,1.691,265138,Success
+2026-05-20 14:55:55,Who was the commander of Sector 7 during the Liberation War?,Sector 7 commander Liberation War of Bangladesh,,0.118,0.702,0.0,0.82,0,Failed at Search (No URL)
+2026-05-20 14:56:52,"আমি জানতে চাই, বাংলাদেশের সবচেয়ে দক্ষিণের উপজেলা টেকনাফের ইতিহাস কী?",টেকনাফ উপজেলার ইতিহাস,,0.247,0.171,0.0,0.418,0,Failed at Search (No URL)
+2026-05-20 14:56:52,জাতীয় স্মৃতিসৌধের সাতটি স্তম্ভের তাৎপর্য কী?,জাতীয় স্মৃতিসৌধ,,0.138,0.064,0.0,0.202,0,Failed at Search (No URL)
+2026-05-20 14:56:52,"আপনি কি জানেন, বাংলাদেশের প্রথম এভারেস্ট বিজয়ী মুসা ইব্রাহীম কবে চূড়ায় ওঠেন?",মুসা ইব্রাহীম,,0.131,0.13,0.0,0.262,0,Failed at Search (No URL)
+2026-05-20 14:56:52,সোমপুর মহাবিহার বা পাহাড়পুর বৌদ্ধ বিহার কে আবিষ্কার করেন?,সোমপুর মহাবিহার আবিষ্কার,,0.154,0.113,0.0,0.268,0,Failed at Search (No URL)
+2026-05-20 14:56:53,বাংলাদেশের প্রথম অস্থায়ী সরকার বা মুজিবনগর সরকার কবে গঠিত হয়?,মুজিবনগর সরকার,,0.117,0.156,0.0,0.273,0,Failed at Search (No URL)
+2026-05-20 14:56:53,বাংলাদেশের সংবিধানের রাষ্ট্র পরিচালনার মূলনীতিগুলো কী কী?,বাংলাদেশের সংবিধানের রাষ্ট্র পরিচালনার মূলনীতি,,0.219,0.066,0.0,0.286,0,Failed at Search (No URL)
+2026-05-20 14:56:53,বিশ্বসাহিত্য কেন্দ্রের প্রতিষ্ঠাতা অধ্যাপক আবদুল্লাহ আবু সায়ীদ সম্পর্কে বলুন।,আবদুল্লাহ আবু সায়ীদ,,0.154,0.109,0.0,0.263,0,Failed at Search (No URL)
+2026-05-20 14:56:54,কর্ণফুলী নদীর তলদেশে নির্মিত বঙ্গবন্ধু টানেলের দৈর্ঘ্য কত?,বঙ্গবন্ধু টানেল,,0.118,0.13,0.0,0.248,0,Failed at Search (No URL)
+2026-05-20 14:56:54,কাজী নজরুল ইসলামের বিখ্যাত কাব্যগ্রন্থ 'অগ্নিবীণা' কবে প্রকাশিত হয়?,অগ্নিবীণা,,0.108,0.098,0.0,0.206,0,Failed at Search (No URL)
