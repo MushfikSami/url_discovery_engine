@@ -1,41 +1,55 @@
 # search.py
 import requests
-from config import SEARXNG_URL
+import re
+from config import WIKI_USER_AGENT
 
-def search_wikipedia(query: str) -> str:
-    """Queries SearXNG strictly using the Wikipedia engine and returns the top URL."""
-    
+def is_bengali(text: str) -> bool:
+    """Detects if the query contains Bengali characters."""
+    return bool(re.search(r'[\u0980-\u09FF]', text))
+
+def search_mediawiki(query: str):
+    """
+    Queries the official MediaWiki OpenSearch API.
+    Returns the top URL and a list of alternate suggestions.
+    """
+    # Auto-route to the correct language database
+    lang = "bn" if is_bengali(query) else "en"
+    url = f"https://{lang}.wikipedia.org/w/api.php"
+
     params = {
-        "q": query,
-        "engines": "wikipedia",
+        "action": "opensearch",
+        "search": query,
+        "limit": 3,           # Fetch top 3 suggestions
+        "namespace": 0,       # Only search standard articles
         "format": "json"
+    }
+    
+    headers = {
+        "User-Agent": WIKI_USER_AGENT
     }
 
     try:
-        response = requests.get(f"{SEARXNG_URL}/search", params=params, timeout=5.0)
+        response = requests.get(url, params=params, headers=headers, timeout=5.0)
         response.raise_for_status()
         
+        # OpenSearch format: [ "Query", ["Title1", "Title2"], ["Desc1", "Desc2"], ["URL1", "URL2"] ]
         data = response.json()
+        titles = data[1]
+        urls = data[3]
         
-        # 1. Try to get a standard search result first
-        results = data.get("results", [])
-        if results and results[0].get("url"):
-            top_url = results[0].get("url")
-            print(f"🔍 [SearXNG] Found Top URL (Standard Result): {top_url}")
-            return top_url
+        if not urls:
+            print(f"⚠️ [MediaWiki] No results found for: {query}")
+            return None, []
             
-        # 2. THE FIX: If no standard results, check if Wikipedia returned an infobox
-        infoboxes = data.get("infoboxes", [])
-        if infoboxes:
-            # The Wikipedia URL is usually stored in the 'id' field of the infobox
-            top_url = infoboxes[0].get("id") 
-            if top_url and "wikipedia.org" in top_url:
-                print(f"🔍 [SearXNG] Found Top URL (Infobox Match): {top_url}")
-                return top_url
-
-        print(f"⚠️ [SearXNG] No Wikipedia URLs found for: {query}")
-        return None
+        top_url = urls[0]
+        suggestions = titles[1:] # Keep the 2nd and 3rd titles as alternatives
+        
+        print(f"🔍 [MediaWiki] Top Match: {top_url}")
+        if suggestions:
+            print(f"💡 [MediaWiki] Did you mean? {', '.join(suggestions)}")
+            
+        return top_url, suggestions
 
     except requests.exceptions.RequestException as e:
-        print(f"❌ [SearXNG Error] Failed to connect: {e}")
-        return None
+        print(f"❌ [MediaWiki Error] API failed: {e}")
+        return None, []
