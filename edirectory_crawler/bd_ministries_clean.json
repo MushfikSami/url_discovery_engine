@@ -1,0 +1,488 @@
+{
+    "status": "SUCCESS",
+    "data": [
+        {
+            "_id": "683582756aed6b4dfd278393",
+            "subdomain": "mopa.gov.bd",
+            "id": "683582756aed6b4dfd278393",
+            "sitename_en": "Ministry of Public Administration",
+            "sitename_bn": "জনপ্রশাসন মন্ত্রণালয়"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710dec",
+            "subdomain": "motj.gov.bd",
+            "id": "66852ce55cd8c8d9bc710dec",
+            "sitename_en": "Ministry of Textiles & Jute",
+            "sitename_bn": "বস্ত্র ও পাট মন্ত্রণালয়"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710def",
+            "subdomain": "moi.gov.bd",
+            "id": "66852ce55cd8c8d9bc710def",
+            "sitename_en": "Ministry of Information and Broadcasting",
+            "sitename_bn": "তথ্য ও সম্প্রচার মন্ত্রণালয়"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710e0a",
+            "subdomain": "ptd.gov.bd",
+            "id": "66852ce55cd8c8d9bc710e0a",
+            "sitename_en": "Posts and Telecommunications Division",
+            "sitename_bn": "ডাক ও টেলিযোগাযোগ বিভাগ"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710e12",
+            "subdomain": "minland.gov.bd",
+            "id": "66852ce55cd8c8d9bc710e12",
+            "sitename_en": "Ministry Of Land",
+            "sitename_bn": "ভূমি মন্ত্রণালয়"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710e14",
+            "subdomain": "mochta.gov.bd",
+            "id": "66852ce55cd8c8d9bc710e14",
+            "sitename_en": "Ministry of Chittagong Hill Tracts Affairs",
+            "sitename_bn": "পার্বত্য চট্টগ্রাম বিষয়ক মন্ত্রণালয়"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710e1a",
+            "subdomain": "ssd.gov.bd",
+            "id": "66852ce55cd8c8d9bc710e1a",
+            "sitename_en": "Security Services Division",
+            "sitename_bn": "সুরক্ষা সেবা বিভাগ"
+        },
+        {
+            "_id": "687dec1f7e39f36d0f89a505",
+            "subdomain": "publicdivision.portal.gov.bd",
+            "id": "687dec1f7e39f36d0f89a505",
+            "sitename_en": "Public Division",
+            "sitename_bn": "জন বিভাগ"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710de8",
+            "subdomain": "msw.gov.bd",
+            "id": "66852ce55cd8c8d9bc710de8",
+            "sitename_en": "Ministry of Social Welfare",
+            "sitename_bn": "সমাজকল্যাণ মন্ত্রণালয়"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710df1",
+            "subdomain": "ird.gov.bd",
+            "id": "66852ce55cd8c8d9bc710df1",
+            "sitename_en": "Internal Resources Division",
+            "sitename_bn": "অভ্যন্তরীণ সম্পদ বিভাগ"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710df7",
+            "subdomain": "modmr.gov.bd",
+            "id": "66852ce55cd8c8d9bc710df7",
+            "sitename_en": "Ministry of Disaster Management and Relief",
+            "sitename_bn": "দুর্যোগ ব্যবস্থাপনা ও ত্রাণ মন্ত্রণালয়"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710e0e",
+            "subdomain": "imed.gov.bd",
+            "id": "66852ce55cd8c8d9bc710e0e",
+            "sitename_en": "Implementation Monitoring and Evaluation Division",
+            "sitename_bn": "বাস্তবায়ন পরিবীক্ষণ ও মূল্যায়ন বিভাগ"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710e1b",
+            "subdomain": "mefwd.gov.bd",
+            "id": "66852ce55cd8c8d9bc710e1b",
+            "sitename_en": "Medical Education and Family Welfare Division",
+            "sitename_bn": "স্বাস্থ্য শিক্ষা ও পরিবার কল্যাণ বিভাগ"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710deb",
+            "subdomain": "mowca.gov.bd",
+            "id": "66852ce55cd8c8d9bc710deb",
+            "sitename_en": "Ministry of Women and Children Affairs",
+            "sitename_bn": "মহিলা ও শিশু বিষয়ক মন্ত্রণালয়"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710e04",
+            "subdomain": "mos.gov.bd",
+            "id": "66852ce55cd8c8d9bc710e04",
+            "sitename_en": "Ministry of Shipping",
+            "sitename_bn": "নৌপরিবহন মন্ত্রণালয়"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710e09",
+            "subdomain": "cabinet.gov.bd",
+            "id": "66852ce55cd8c8d9bc710e09",
+            "sitename_en": "Cabinet Division",
+            "sitename_bn": "মন্ত্রিপরিষদ বিভাগ"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710e0f",
+            "subdomain": "sid.gov.bd",
+            "id": "66852ce55cd8c8d9bc710e0f",
+            "sitename_en": "Statistics and Informatics Division",
+            "sitename_bn": "পরিসংখ্যান ও তথ্য ব্যবস্থাপনা বিভাগ"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710e11",
+            "subdomain": "mohpw.gov.bd",
+            "id": "66852ce55cd8c8d9bc710e11",
+            "sitename_en": "Ministry of Housing and Public Works",
+            "sitename_bn": "গৃহায়ন ও গণপূর্ত মন্ত্রণালয়"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710e13",
+            "subdomain": "bangabhaban.gov.bd",
+            "id": "66852ce55cd8c8d9bc710e13",
+            "sitename_en": "President's Office",
+            "sitename_bn": "রাষ্ট্রপতির কার্যালয়"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710e18",
+            "subdomain": "mop.gov.bd",
+            "id": "66852ce55cd8c8d9bc710e18",
+            "sitename_en": "Ministry of Planning",
+            "sitename_bn": "পরিকল্পনা মন্ত্রণালয়"
+        },
+        {
+            "_id": "687def1e7e39f36d0f89a507",
+            "subdomain": "personaldivision.portal.gov.bd",
+            "id": "687def1e7e39f36d0f89a507",
+            "sitename_en": "Personal Division",
+            "sitename_bn": "আপন বিভাগ"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710ded",
+            "subdomain": "bridgesdivision.gov.bd",
+            "id": "66852ce55cd8c8d9bc710ded",
+            "sitename_en": "Bridges Division",
+            "sitename_bn": "সেতু বিভাগ"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710df0",
+            "subdomain": "mof.gov.bd",
+            "id": "66852ce55cd8c8d9bc710df0",
+            "sitename_en": "Finance Division, Ministry of Finance",
+            "sitename_bn": "অর্থ বিভাগ, অর্থ মন্ত্রণালয়"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710df5",
+            "subdomain": "moca.gov.bd",
+            "id": "66852ce55cd8c8d9bc710df5",
+            "sitename_en": "Ministry of Cultural Affairs",
+            "sitename_bn": "সংস্কৃতি বিষয়ক মন্ত্রণালয়"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710dfb",
+            "subdomain": "mofood.gov.bd",
+            "id": "66852ce55cd8c8d9bc710dfb",
+            "sitename_en": "Ministry of Food",
+            "sitename_bn": "খাদ্য মন্ত্রণালয়"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710dff",
+            "subdomain": "plandiv.gov.bd",
+            "id": "66852ce55cd8c8d9bc710dff",
+            "sitename_en": "Planning Division",
+            "sitename_bn": "পরিকল্পনা বিভাগ"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710e02",
+            "subdomain": "mopme.gov.bd",
+            "id": "66852ce55cd8c8d9bc710e02",
+            "sitename_en": "Ministry of Primary and Mass Education",
+            "sitename_bn": "প্রাথমিক ও গণশিক্ষা মন্ত্রণালয়"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710e05",
+            "subdomain": "most.gov.bd",
+            "id": "66852ce55cd8c8d9bc710e05",
+            "sitename_en": "Ministry of Science and Technology",
+            "sitename_bn": "বিজ্ঞান ও প্রযুক্তি মন্ত্রণালয়"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710e07",
+            "subdomain": "moysports.gov.bd",
+            "id": "66852ce55cd8c8d9bc710e07",
+            "sitename_en": "Ministry of Youth and Sports",
+            "sitename_bn": "যুব ও ক্রীড়া মন্ত্রণালয়"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710e10",
+            "subdomain": "rdcd.gov.bd",
+            "id": "66852ce55cd8c8d9bc710e10",
+            "sitename_en": "Rural Development and Co-operatives Division",
+            "sitename_bn": "পল্লী উন্নয়ন ও সমবায় বিভাগ"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710e19",
+            "subdomain": "mhapsd.gov.bd",
+            "id": "66852ce55cd8c8d9bc710e19",
+            "sitename_en": "Public Security Division",
+            "sitename_bn": "জননিরাপত্তা বিভাগ"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710de9",
+            "subdomain": "moa.gov.bd",
+            "id": "66852ce55cd8c8d9bc710de9",
+            "sitename_en": "Ministry of Agriculture",
+            "sitename_bn": "কৃষি মন্ত্রণালয়"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710df2",
+            "subdomain": "mofa.gov.bd",
+            "id": "66852ce55cd8c8d9bc710df2",
+            "sitename_en": "Ministry of Foreign Affairs",
+            "sitename_bn": "পররাষ্ট্র মন্ত্রণালয়"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710df8",
+            "subdomain": "moef.gov.bd",
+            "id": "66852ce55cd8c8d9bc710df8",
+            "sitename_en": "Ministry of Environment, Forest and Climate Change",
+            "sitename_bn": "পরিবেশ, বন ও জলবায়ু পরিবর্তন মন্ত্রণালয়"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710dfa",
+            "subdomain": "mofl.gov.bd",
+            "id": "66852ce55cd8c8d9bc710dfa",
+            "sitename_en": "Ministry of Fisheries And Livestock",
+            "sitename_bn": "মৎস্য ও প্রাণিসম্পদ মন্ত্রণালয়"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710e01",
+            "subdomain": "mora.gov.bd",
+            "id": "66852ce55cd8c8d9bc710e01",
+            "sitename_en": "Ministry of Religious Affairs",
+            "sitename_bn": "ধর্ম বিষয়ক মন্ত্রণালয়"
+        },
+        {
+            "_id": "6858d14ffc815f50c5121e5a",
+            "subdomain": "ictd.gov.bd",
+            "id": "6858d14ffc815f50c5121e5a",
+            "sitename_en": "ICT Division",
+            "sitename_bn": "তথ্য ও যোগাযোগ প্রযুক্তি বিভাগ"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710dea",
+            "subdomain": "mohfw.gov.bd",
+            "id": "66852ce55cd8c8d9bc710dea",
+            "sitename_en": "Ministry of Health & Family Welfare",
+            "sitename_bn": "স্বাস্থ্য ও পরিবার কল্যাণ মন্ত্রণালয়"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710dee",
+            "subdomain": "fid.gov.bd",
+            "id": "66852ce55cd8c8d9bc710dee",
+            "sitename_en": "Financial Institutions Division",
+            "sitename_bn": "আর্থিক প্রতিষ্ঠান বিভাগ"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710dfc",
+            "subdomain": "moind.gov.bd",
+            "id": "66852ce55cd8c8d9bc710dfc",
+            "sitename_en": "Ministry of Industries",
+            "sitename_bn": "শিল্প মন্ত্রণালয়"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710dfe",
+            "subdomain": "molwa.gov.bd",
+            "id": "66852ce55cd8c8d9bc710dfe",
+            "sitename_en": "Ministry of Liberation War Affairs",
+            "sitename_bn": "মুক্তিযুদ্ধ বিষয়ক মন্ত্রণালয়"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710e03",
+            "subdomain": "mor.gov.bd",
+            "id": "66852ce55cd8c8d9bc710e03",
+            "sitename_en": "Ministry of Railways",
+            "sitename_bn": "রেলপথ মন্ত্রণালয়"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710e0c",
+            "subdomain": "minlaw.gov.bd",
+            "id": "66852ce55cd8c8d9bc710e0c",
+            "sitename_en": "Ministry of Law, Justice and Parliamentary Affairs",
+            "sitename_bn": "আইন, বিচার ও সংসদ বিষয়ক মন্ত্রণালয়"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710df3",
+            "subdomain": "mincom.gov.bd",
+            "id": "66852ce55cd8c8d9bc710df3",
+            "sitename_en": "Ministry of Commerce",
+            "sitename_bn": "বাণিজ্য মন্ত্রণালয়"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710df6",
+            "subdomain": "mod.gov.bd",
+            "id": "66852ce55cd8c8d9bc710df6",
+            "sitename_en": "Ministry of Defence",
+            "sitename_bn": "প্রতিরক্ষা মন্ত্রণালয়"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710df9",
+            "subdomain": "probashi.gov.bd",
+            "id": "66852ce55cd8c8d9bc710df9",
+            "sitename_en": "Ministry of Expatriates’ Welfare and Overseas Employment",
+            "sitename_bn": "প্রবাসী কল্যাণ ও বৈদেশিক কর্মসংস্থান মন্ত্রণালয়"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710dfd",
+            "subdomain": "mole.gov.bd",
+            "id": "66852ce55cd8c8d9bc710dfd",
+            "sitename_en": "Ministry of Labour and Employment",
+            "sitename_bn": "শ্রম ও কর্মসংস্থান মন্ত্রণালয়"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710e00",
+            "subdomain": "powerdivision.gov.bd",
+            "id": "66852ce55cd8c8d9bc710e00",
+            "sitename_en": "Power Division",
+            "sitename_bn": "বিদ্যুৎ বিভাগ"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710e06",
+            "subdomain": "mowr.gov.bd",
+            "id": "66852ce55cd8c8d9bc710e06",
+            "sitename_en": "Ministry of Water Resources",
+            "sitename_bn": "পানি সম্পদ মন্ত্রণালয়"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710e0b",
+            "subdomain": "erd.gov.bd",
+            "id": "66852ce55cd8c8d9bc710e0b",
+            "sitename_en": "Economic Relations Division",
+            "sitename_bn": "অর্থনৈতিক সম্পর্ক বিভাগ"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710e0d",
+            "subdomain": "legislativediv.gov.bd",
+            "id": "66852ce55cd8c8d9bc710e0d",
+            "sitename_en": "Legislative and Parliamentary Affairs Division",
+            "sitename_bn": "লেজিসলেটিভ ও সংসদ বিষয়ক বিভাগ"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710e15",
+            "subdomain": "mocat.gov.bd",
+            "id": "66852ce55cd8c8d9bc710e15",
+            "sitename_en": "Ministry of Civil Aviation and Tourism",
+            "sitename_bn": "বেসামরিক বিমান পরিবহন ও পর্যটন মন্ত্রণালয়"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710e16",
+            "subdomain": "emrd.gov.bd",
+            "id": "66852ce55cd8c8d9bc710e16",
+            "sitename_en": "Energy and Mineral Resources Division",
+            "sitename_bn": "জ্বালানি ও খনিজ সম্পদ বিভাগ"
+        },
+        {
+            "_id": "66852ce55cd8c8d9bc710e1c",
+            "subdomain": "hsd.gov.bd",
+            "id": "66852ce55cd8c8d9bc710e1c",
+            "sitename_en": "Health Services Division",
+            "sitename_bn": "স্বাস্থ্য সেবা বিভাগ"
+        },
+        {
+            "_id": "687f4277a79706ab75fb1370",
+            "subdomain": "lawjusticediv.gov.bd",
+            "id": "687f4277a79706ab75fb1370",
+            "sitename_en": "Law and Justice Division",
+            "sitename_bn": "আইন ও বিচার বিভাগ"
+        },
+        {
+            "_id": "687f4277a79706ab75fb1379",
+            "subdomain": "lgd.gov.bd",
+            "id": "687f4277a79706ab75fb1379",
+            "sitename_en": "Local Government Division",
+            "sitename_bn": "স্থানীয় সরকার বিভাগ"
+        },
+        {
+            "_id": "6885c8042de8ffc4928e3dc0",
+            "subdomain": "moedu.gov.bd",
+            "id": "6885c8042de8ffc4928e3dc0",
+            "sitename_en": "Ministry of Education",
+            "sitename_bn": "শিক্ষা মন্ত্রণালয়"
+        },
+        {
+            "_id": "687f4277a79706ab75fb1380",
+            "subdomain": "rthd.gov.bd",
+            "id": "687f4277a79706ab75fb1380",
+            "sitename_en": "Road Transport And Highways Division",
+            "sitename_bn": "সড়ক পরিবহন ও মহাসড়ক বিভাগ"
+        },
+        {
+            "_id": "687f4277a79706ab75fb137c",
+            "subdomain": "poweren.portal.gov.bd",
+            "id": "687f4277a79706ab75fb137c",
+            "sitename_en": "Power, Energy and Mineral Resources Minisrty",
+            "sitename_bn": "বিদ্যুৎ, জ্বালানি ও খনিজ সম্পদ মন্ত্রণালয়"
+        },
+        {
+            "_id": "67bae33ff01311b0da5068e0",
+            "subdomain": "afd.portal.gov.bd",
+            "id": "67bae33ff01311b0da5068e0",
+            "sitename_en": "Armed Forces Division",
+            "sitename_bn": "সশস্ত্র বাহিনী বিভাগ"
+        },
+        {
+            "_id": "689c2fefb83b3709f8cfd42e",
+            "subdomain": "shed.gov.bd",
+            "id": "689c2fefb83b3709f8cfd42e",
+            "sitename_en": "Secondary and Higher Education Division",
+            "sitename_bn": "মাধ্যমিক ও উচ্চ শিক্ষা বিভাগ"
+        },
+        {
+            "_id": "689c2fefb83b3709f8cfd42f",
+            "subdomain": "tmed.gov.bd",
+            "id": "689c2fefb83b3709f8cfd42f",
+            "sitename_en": "Technical and Madrasah Education Division",
+            "sitename_bn": "কারিগরি ও মাদ্রাসা শিক্ষা বিভাগ"
+        },
+        {
+            "_id": "68ff475c7188fffa89239900",
+            "subdomain": "moha.gov.bd",
+            "id": "68ff475c7188fffa89239900",
+            "sitename_en": "MINISTRY OF HOME AFFAIRS",
+            "sitename_bn": "স্বরাষ্ট্র মন্ত্রণালয়"
+        },
+        {
+            "_id": "68f9b847028064e9c665a2d4",
+            "subdomain": "a2iblog.gov.bd",
+            "id": "68f9b847028064e9c665a2d4",
+            "sitename_en": "a2i",
+            "sitename_bn": "a2i"
+        },
+        {
+            "_id": "6989b5d96c8b5ef4c97b73ce",
+            "subdomain": "pmo.gov.bd",
+            "id": "6989b5d96c8b5ef4c97b73ce",
+            "sitename_en": "Prime Minister’s Office",
+            "sitename_bn": "প্রধানমন্ত্রীর কার্যালয়"
+        },
+        {
+            "_id": "6993f71c44b7c90f92224638",
+            "subdomain": "parliament.portal.gov.bd",
+            "id": "6993f71c44b7c90f92224638",
+            "sitename_en": "Bangladesh Parliament",
+            "sitename_bn": "বাংলাদেশ জাতীয় সংসদ"
+        },
+        {
+            "_id": "69acf70c967e3d7bb2e1e6c9",
+            "subdomain": "mortb.gov.bd",
+            "id": "69acf70c967e3d7bb2e1e6c9",
+            "sitename_en": "Ministry of Road Transport and Bridges",
+            "sitename_bn": "সড়ক পরিবহন ও সেতু মন্ত্রণালয়"
+        },
+        {
+            "_id": "69acf94f16300c4b7d8cc59c",
+            "subdomain": "moptit.gov.bd",
+            "id": "69acf94f16300c4b7d8cc59c",
+            "sitename_en": "Ministry of Posts, Telecommunications and Information Technology",
+            "sitename_bn": "ডাক, টেলিযোগাযোগ ও তথ্যপ্রযুক্তি মন্ত্রণালয়"
+        },
+        {
+            "_id": "69acfa20948432df63088216",
+            "subdomain": "molgrdc.gov.bd",
+            "id": "69acfa20948432df63088216",
+            "sitename_en": "Ministry of Local Government, Rural Development and Co-operatives",
+            "sitename_bn": "স্থানীয় সরকার, পল্লী উন্নয়ন ও সমবায় মন্ত্রণালয়"
+        }
+    ]
+}
