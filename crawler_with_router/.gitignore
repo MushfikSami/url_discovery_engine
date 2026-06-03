@@ -1,0 +1,8 @@
+# Log files
+crawler_logs/
+
+# Data files
+data/
+
+# Compressed files
+*.gz

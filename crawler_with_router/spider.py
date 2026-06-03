@@ -55,9 +55,9 @@ def load_seeds_from_txt():
                 url = line.strip()
                 if url:
                     cursor.execute("""
-                        INSERT INTO seed_websites (website_url) 
-                        VALUES (%s) ON CONFLICT (website_url) DO NOTHING;
-                    """, (url,))
+                                INSERT INTO seed_websites (website_url, status) 
+                                VALUES (%s, 'pending') ON CONFLICT (website_url) DO NOTHING;
+                                    """, (url,))
         conn.commit()
         cursor.close()
         print(f"[*] Seeds loaded from {SEED_FILE}.")
