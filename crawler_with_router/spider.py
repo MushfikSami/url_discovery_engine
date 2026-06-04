@@ -359,10 +359,25 @@ async def process_url(url, base_domain):
         final_markdown = parse_with_markdownify(html_content)
 
     if final_markdown:
+        # ==========================================
+        # POST-PARSE SANITIZATION (RAG Poison Prevention)
+        # ==========================================
+        md_lower = final_markdown.lower().strip()
+        
+        # Trap 1: Cloudflare & Anti-Bot Waiting Rooms
+        if "just a moment" in md_lower or "enable javascript and cookies" in md_lower or "cloudflare" in md_lower:
+            print(f"      [!] Cloudflare Bot Trap Detected! Discarding payload.")
+            return list(discovered_links) # Return links (if any) but DO NOT save to DB
+            
+        # Trap 2: Empty or micro-pages
+        if len(md_lower) < 50:
+            print(f"      [!] Payload too small ({len(md_lower)} chars). Discarding.")
+            return list(discovered_links)
+
+        # If it passes the checks, save it to the database
         save_crawled_data(url, final_markdown)
     
     return list(discovered_links)
-
 # ==========================================
 # ORCHESTRATOR
 # ==========================================

@@ -1,7 +1,8 @@
 import psycopg2
 import textwrap
+import sys
 
-# Database configuration - match this to your DB_CONFIG
+# Database configuration
 DB_CONFIG = {
     "dbname": "gov_spider_db",
     "user": "postgres",
@@ -10,58 +11,94 @@ DB_CONFIG = {
     "port": "5432"
 }
 
-def verify_crawler_results():
-    print("🔍 Auditing Crawler Fleet Results...\n")
+def get_db_connection():
+    return psycopg2.connect(**DB_CONFIG)
+
+def inspect_url(target_url, columns):
+    print(f"\n🔍 Querying database for: {target_url}")
+    print("=" * 60)
+    
+    conn = None
     try:
-        conn = psycopg2.connect(**DB_CONFIG)
+        conn = get_db_connection()
         cursor = conn.cursor()
-
-        # 1. Check Top-Level Domain Status
-        print("📊 1. SEED DOMAIN STATUS (From seed_websites)")
-        print("-" * 40)
-        cursor.execute("SELECT status, COUNT(*) FROM seed_websites GROUP BY status;")
-        for status, count in cursor.fetchall():
-            print(f"   - {status.upper()}: {count} domains")
-        print("   (If 'PENDING' is 0, the fleet finished the new batch!)")
-
-        # 2. Check Individual Page Queue
-        print("\n🕷️ 2. PAGE QUEUE STATUS (From spider_queue)")
-        print("-" * 40)
-        cursor.execute("SELECT status, COUNT(*) FROM spider_queue GROUP BY status;")
-        for status, count in cursor.fetchall():
-            print(f"   - {status.upper()}: {count} pages")
-
-        # 3. Check Final Extracted Data
-        print("\n💾 3. EXTRACTED DATA (From crawled_data)")
-        print("-" * 40)
-        cursor.execute("SELECT COUNT(*) FROM crawled_data;")
-        total_data = cursor.fetchone()[0]
-        print(f"   - Total Markdown documents saved in DB: {total_data}")
-
-        # 4. Preview the Data to ensure parsers didn't fail
-        print("\n👀 4. PAYLOAD SANITY CHECK (Random Sample of 3)")
-        print("-" * 40)
-        # Using ORDER BY RANDOM() to grab a random sample of crawled data
-        cursor.execute("""
-            SELECT url, LENGTH(raw_markdown), snippet 
-            FROM crawled_data 
-            WHERE LENGTH(raw_markdown) > 0
-            ORDER BY RANDOM() 
-            LIMIT 3;
-        """)
         
-        for url, length, snippet in cursor.fetchall():
-            print(f"🌐 URL: {url}")
-            print(f"📏 Size: {length} characters of Markdown")
-            # Wrap the snippet text so it formats nicely in the terminal
-            short_snippet = textwrap.shorten(snippet or "No snippet", width=80, placeholder="...")
-            print(f"📝 Snippet: {short_snippet}\n")
+        # 1. Check the queue status first
+        cursor.execute("SELECT status, added_at FROM spider_queue WHERE url LIKE %s;", (target_url,))
+        queue_result = cursor.fetchone()
+        
+        if queue_result:
+            status, added_at = queue_result
+            print(f"🚦 QUEUE STATUS : {status.upper()} (Added: {added_at})")
+        else:
+            print("🚦 QUEUE STATUS : NOT FOUND in spider_queue")
+            
+        # 2. Dynamically construct the query for crawled_data
+        # We always fetch lengths of the markdown to verify payload size without printing it all
+        safe_columns = [col for col in columns if col in ['url', 'raw_markdown', 'snippet', 'keywords']]
+        
+        if not safe_columns:
+            print("⚠️ No valid columns selected for crawled_data.")
+            return
 
-        cursor.close()
-        conn.close()
-
+        query_cols = ", ".join(safe_columns)
+        
+        cursor.execute(f"""
+            SELECT LENGTH(raw_markdown), {query_cols} 
+            FROM crawled_data 
+            WHERE url LIKE %s;
+        """, (target_url,))
+        
+        data_result = cursor.fetchone()
+        
+        if data_result:
+            markdown_length = data_result[0]
+            print(f"📦 PAYLOAD SIZE : {markdown_length} characters")
+            print("-" * 60)
+            
+            # Print the dynamically requested columns
+            # data_result[1:] contains the requested columns in order
+            for col_name, value in zip(safe_columns, data_result[1:]):
+                print(f"\n[ {col_name.upper()} ]")
+                
+                if not value:
+                    print("  -> NULL or EMPTY")
+                    continue
+                    
+                if isinstance(value, list):
+                    # Handle arrays (like keywords)
+                    print(f"  -> {', '.join(value)}")
+                elif col_name == 'raw_markdown':
+                    # Truncate raw markdown to prevent terminal flooding
+                    preview = value[:500] + "\n\n... [TRUNCATED] ..." if len(value) > 500 else value
+                    print(textwrap.indent(preview, '  '))
+                else:
+                    # Handle text (like snippet)
+                    wrapped_text = textwrap.fill(str(value), width=80)
+                    print(textwrap.indent(wrapped_text, '  '))
+                    
+        else:
+            print("\n⚠️ NO EXTRACTED DATA: This URL has not been successfully saved to crawled_data yet.")
+            
     except Exception as e:
-        print(f"❌ Database error: {e}")
+        print(f"\n❌ Database Error: {e}")
+    finally:
+        if conn:
+            cursor.close()
+            conn.close()
 
 if __name__ == "__main__":
-    verify_crawler_results()
+    print("🕸️  GovBD Manual Database Inspector")
+    print("-" * 40)
+    
+    url_input = input("Enter exact URL (or use % as wildcard): ").strip()
+    
+    print("\nAvailable columns: url, raw_markdown, snippet, keywords")
+    cols_input = input("Enter columns to view (comma separated) [Default: snippet,keywords]: ").strip()
+    
+    if not cols_input:
+        columns_to_check = ['snippet', 'keywords']
+    else:
+        columns_to_check = [c.strip().lower() for c in cols_input.split(',')]
+        
+    inspect_url(url_input, columns_to_check)
