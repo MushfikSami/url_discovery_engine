@@ -2,6 +2,7 @@
 import markdownify
 from bs4 import BeautifulSoup
 from crawl4ai import AsyncWebCrawler
+import re
 
 async def parse_with_crawl4ai(url):
     """Option A: Uses a headless browser to render JS, then extracts Markdown."""
@@ -21,23 +22,23 @@ async def parse_with_crawl4ai(url):
         return ""
 
 def parse_with_markdownify(html_content):
-    """Option B: Instantly converts static HTML to Markdown natively."""
-    print("    [Action] Option B (Static): Routing to markdownify")
+    """Production-grade single-pass parser using fast regex pre-stripping."""
     try:
-        # Pre-clean the HTML using BeautifulSoup
-        soup = BeautifulSoup(html_content, 'html.parser')
-        # Destroy all script and style tags completely
-        for unwanted in soup(['script', 'style', 'noscript']):
-            unwanted.decompose()
-            
-        clean_html = str(soup)
+        # Step 1: Use high-speed regex to drop massive script, style, and svg blocks 
+        # BEFORE building any heavy DOM tree objects in memory.
+        clean_html = re.sub(r'<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>', '', html_content, flags=re.I)
+        clean_html = re.sub(r'<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>', '', clean_html, flags=re.I)
+        clean_html = re.sub(r'<svg\b[^<]*(?:(?!<\/svg>)<[^<]*)*<\/svg>', '', clean_html, flags=re.I)
+        clean_html = re.sub(r'<img\b[^>]*>', '', clean_html, flags=re.I) # Drop images entirely
         
+        # Step 2: Pass the pre-shrunk text directly into markdownify in a single pass
         md = markdownify.markdownify(
             clean_html, 
             heading_style="ATX", 
-            strip=['nav', 'footer', 'header']
+            strip=['nav', 'footer', 'header', 'aside', 'script', 'style']
         )
         return md.strip()
+        
     except Exception as e:
         print(f"    [!] Markdownify Error: {e}")
         return ""
