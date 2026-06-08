@@ -1,4 +1,3 @@
-# spider.py
 import asyncio
 import httpx
 from bs4 import BeautifulSoup
@@ -6,18 +5,25 @@ from urllib.parse import urljoin, urlparse
 import psycopg2
 from psycopg2 import pool
 import os
+import psutil
+import datetime
 
 from db_setup import DB_CONFIG
 from extractor import is_javascript_heavy, extract_keywords, generate_snippet
 from parsers import parse_with_crawl4ai, parse_with_markdownify
 
-SEED_FILE = "data/crawled_alive_gov_bd_sites.txt" # Your text file with 1 URL per line
+SEED_FILE = "data/crawled_alive_gov_bd_sites(_district_level).txt" # Your text file with 1 URL per line
+
+# ==========================================
+# CONCURRENCY LIMITS
+# ==========================================
+# 🚦 Hard-cap the concurrent headless browser instances.
+# 5 browsers * ~600MB max = ~3GB RAM dedicated to browser scraping.
+BROWSER_SEMAPHORE = asyncio.Semaphore(10)
 
 # ==========================================
 # DATABASE CONNECTION POOL
 # ==========================================
-# Initialize a thread-safe connection pool for this worker
-# (min connections = 1, max connections = 10)
 try:
     db_pool = psycopg2.pool.ThreadedConnectionPool(1, 10, **DB_CONFIG)
 except Exception as e:
@@ -55,9 +61,9 @@ def load_seeds_from_txt():
                 url = line.strip()
                 if url:
                     cursor.execute("""
-                                INSERT INTO seed_websites (website_url, status) 
-                                VALUES (%s, 'pending') ON CONFLICT (website_url) DO NOTHING;
-                                    """, (url,))
+                        INSERT INTO seed_websites (website_url, status) 
+                        VALUES (%s, 'pending') ON CONFLICT (website_url) DO NOTHING;
+                    """, (url,))
         conn.commit()
         cursor.close()
         print(f"[*] Seeds loaded from {SEED_FILE}.")
@@ -106,8 +112,23 @@ def mark_website_completed(website_url):
         release_db_connection(conn)
 
 # ==========================================
-# QUEUE MANAGEMENT (INNER LOOP)
+# QUEUE MANAGEMENT (INNER LOOP & SCAVENGER)
 # ==========================================
+def get_global_pending_counts():
+    """Returns the total remaining seeds and pages to prevent premature shutdown."""
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(*) FROM seed_websites WHERE status = 'pending';")
+        seeds = cursor.fetchone()[0]
+        cursor.execute("SELECT COUNT(*) FROM spider_queue WHERE status = 'pending';")
+        pages = cursor.fetchone()[0]
+        return seeds, pages
+    except Exception:
+        return 0, 0
+    finally:
+        release_db_connection(conn)
+
 def get_next_pending_webpage(base_domain):
     """Gets the next webpage specifically for the CURRENT active domain."""
     conn = get_db_connection()
@@ -133,8 +154,32 @@ def get_next_pending_webpage(base_domain):
         release_db_connection(conn)
     return result[0] if result else None
 
+def get_any_pending_webpage():
+    """SCAVENGER MODE: Grabs ANY pending page from the queue regardless of domain."""
+    conn = get_db_connection()
+    result = None
+    try:
+        cursor = conn.cursor()
+        cursor.execute("""
+            UPDATE spider_queue SET status = 'processing' 
+            WHERE url = (
+                SELECT url FROM spider_queue 
+                WHERE status = 'pending' 
+                ORDER BY added_at ASC LIMIT 1 
+                FOR UPDATE SKIP LOCKED
+            ) RETURNING url, base_domain;
+        """)
+        result = cursor.fetchone()
+        conn.commit()
+        cursor.close()
+    except Exception as e:
+        print(f"  [!] DB Error in get_any_pending_webpage: {e}")
+        conn.rollback()
+    finally:
+        release_db_connection(conn)
+    return result # Returns (url, base_domain) or None
+
 def add_urls_to_queue(urls, base_domain):
-    """Inserts newly discovered URLs into the queue attached to their base domain."""
     if not urls: return
     conn = get_db_connection()
     try:
@@ -169,25 +214,6 @@ def update_webpage_status(url, status):
 # ==========================================
 # DATA SAVING
 # ==========================================
-def update_domain_hierarchy(website, new_url):
-    conn = get_db_connection()
-    try:
-        cursor = conn.cursor()
-        cursor.execute("""
-            INSERT INTO domain_hierarchy (website, web_pages) 
-            VALUES (%s, ARRAY[%s])
-            ON CONFLICT (website) 
-            DO UPDATE SET web_pages = array_append(domain_hierarchy.web_pages, %s)
-            WHERE NOT (%s = ANY(domain_hierarchy.web_pages));
-        """, (website, new_url, new_url, new_url))
-        conn.commit()
-        cursor.close()
-    except Exception as e:
-        print(f"  [!] DB Error in update_domain_hierarchy: {e}")
-        conn.rollback()
-    finally:
-        release_db_connection(conn)
-
 def save_crawled_data(url, markdown):
     snippet = generate_snippet(markdown)
     keywords = extract_keywords(markdown)
@@ -227,199 +253,180 @@ async def process_url(url, base_domain):
     
     discovered_links = set()
     for a_tag in soup.find_all('a', href=True):
-        # Clean whitespace and strip anchor tags
         href = a_tag['href'].strip()
         full_url = urljoin(url, href).split('#')[0]
         
-        # ==========================================
-        # THE TRAP KILLERS
-        # ==========================================
-        # 0. The Radioactive Ghost (Block the dictionary even if cross-linked)
-        if 'accessibledictionary.gov.bd' in full_url.lower():
-            continue
-
-        # 1. Block HTML/JS Injection (The Frankenstein Killer)
-        if '<' in full_url or '>' in full_url or '{' in full_url or '[' in full_url:
-            continue
-            
-        # 2. Block Insanely Long URLs (The Infinite Loop Killer)
-        if len(full_url) > 250:
-            continue
-            
-        # 3. Block Path Recursion (e.g. /site/view/site/view/site/view)
+        # [ ... All your existing Trap Killers remain active here ... ]
+        if 'accessibledictionary.gov.bd' in full_url.lower(): continue
+        if '<' in full_url or '>' in full_url or '{' in full_url or '[' in full_url: continue
+        if len(full_url) > 250: continue
+        
         path_segments = [seg for seg in urlparse(full_url).path.split('/') if seg]
-        if any(path_segments.count(seg) > 2 for seg in path_segments):
-            continue
-            
-        # 4. Block a2i Template 'nolink' Bug
-        if 'nolink' in full_url.lower():
-            continue
-            
-        # 5. Block unencoded spaces (broken template hrefs)
-        if ' ' in full_url or '%20' in full_url:
-            continue
-
-        # 6. Block the "Relative Domain" Trap
+        if any(path_segments.count(seg) > 2 for seg in path_segments): continue
+        if 'nolink' in full_url.lower(): continue
+        if ' ' in full_url or '%20' in full_url: continue
+        
         url_path = urlparse(full_url).path.lower()
-        if '.gov.bd' in url_path or '.com' in url_path:
-            continue
+        if '.gov.bd' in url_path or '.com' in url_path: continue
+        if any(media_word in url_path for media_word in ['/photo', '/gallery', '/video', '/image']): continue
+        if any(cms_tag in url_path for cms_tag in ['/node/', '/mlid/', '/site/eservices/', '/site/field_office/', '/views/', '/site/education_institute/']): continue
+        if any(koha_tag in url_path for koha_tag in ['opac-search.pl', 'opac-export.pl', 'opac-isbddetail.pl', 'tracklinks.pl', 'opac-reserve.pl', 'opac-detail.pl']): continue
+        if 'search_operative_tariff' in full_url.lower() or 'download=' in full_url.lower(): continue
+        if '/search/all/' in url_path or '/search?' in full_url.lower() or 'separator' in full_url.lower(): continue
+        if ';jsessionid=' in full_url.lower(): continue
+        if 'eyJpdiI6' in full_url or '/passport_details/' in url_path or '/application/' in url_path: continue
+        if '/cdn-cgi/' in url_path or 'response_type=code' in full_url.lower(): continue
+        if any(db_trap in url_path for db_trap in ['/web_site/notice_details/', '/web_site/nis_details/', '/exporter/', '/edirectory-district-listing/', '/show-bibidh-info/']): continue
+        if full_url.endswith('==') or '%f2' in full_url.lower(): continue
+        if 'session=' in full_url.lower() or '&cs=' in full_url.lower() or '?lang=' in full_url.lower(): continue
+        if '-print-' in url_path: continue
 
-        # 7. Block RAG Poison (Media Galleries, Photos, Videos)
-        if any(media_word in url_path for media_word in ['/photo', '/gallery', '/video', '/image']):
-            continue
-
-        # 8. Block a2i CMS Dynamic Routing Loops (Including Views & Education)
-        if any(cms_tag in url_path for cms_tag in ['/node/', '/mlid/', '/site/eservices/', '/site/field_office/', '/views/', '/site/education_institute/']):
-            continue
-
-        # 9. Application Traps (Search Engines, Metadata Exports, & Downloads)
-        if any(koha_tag in url_path for koha_tag in ['opac-search.pl', 'opac-export.pl', 'opac-isbddetail.pl', 'tracklinks.pl', 'opac-reserve.pl', 'opac-detail.pl']):
-            continue
-        if 'search_operative_tariff' in full_url.lower() or 'download=' in full_url.lower():
-            continue
-            
-        # 10. Avoid generic search result pages (SERPs)
-        if '/search/all/' in url_path or '/search?' in full_url.lower() or 'separator' in full_url.lower():
-            continue
-        
-
-        # 11. The a2i Template 'Separator' Bug
-        # Used for drawing lines in dropdown menus, creates infinite CMS loops
-        if 'separator' in full_url.lower():
-            continue
-
-        # 11. Block Java Session IDs (Tracking Traps)
-        if ';jsessionid=' in full_url.lower():
-            continue
-
-        # 12. Block Laravel Encrypted Payloads & App Trackers
-        # 'eyJpdiI6' is Base64 for '{"iv":'
-        if 'eyJpdiI6' in full_url or '/passport_details/' in url_path or '/application/' in url_path:
-            continue
-
-        # 13. Block Cloudflare Bot Challenges & OAuth Login Loops
-        if '/cdn-cgi/' in url_path or 'response_type=code' in full_url.lower():
-            continue
-
-        # 14. Block Encrypted App Routing & Massive Public Databases (RAG Poison)
-        if any(db_trap in url_path for db_trap in ['/web_site/notice_details/', '/web_site/nis_details/', '/exporter/', '/edirectory-district-listing/', '/show-bibidh-info/']):
-            continue
-        if full_url.endswith('==') or '%f2' in full_url.lower():
-            continue
-
-        # 15. Block Session IDs & Print Views (Duplicate Content)
-        if 'session=' in full_url.lower() or '&cs=' in full_url.lower() or '?lang=' in full_url.lower():
-            continue
-        if '-print-' in url_path:
-            continue
-
-        # 16. Block Custom App Loops & Directories
-        # The Savar Death Spiral
         sav_folders = ['home', 'main', 'notice', 'index.php']
-        if any(url_path.lower().count(f) > 1 for f in sav_folders):
-            continue
-        
-        # The Scout Hydra
-        if '/group-details/' in url_path or '/unit-details/' in url_path or '/edirectory-' in url_path:
-            continue
+        if any(url_path.lower().count(f) > 1 for f in sav_folders): continue
+        if '/group-details/' in url_path or '/unit-details/' in url_path or '/edirectory-' in url_path: continue
             
-        # The SREDA Shuffle (Updated)
         sreda_folders = ['irsc', 'nem', 'locallab', 'intllab', 'stakeholder', 'login', 'view', 'noc']
-        if any(folder in url_path for folder in sreda_folders) and any(url_path.count(folder) > 1 for folder in sreda_folders):
-            continue
+        if any(folder in url_path for folder in sreda_folders) and any(url_path.count(folder) > 1 for folder in sreda_folders): continue
 
-        # 17. Hard Block Media Extensions & Deep DBs (RAG Poison)
-        if any(ext in full_url.lower() for ext in ['.jpg', '.jpeg', '.png', '.gif', '/wp-content/uploads/']):
-            continue
-        if any(db in url_path for db in ['/bridgedatabase/', '/unit-details/', '/operative-tariff/details/', '/hs-code-details/']):
-            continue
+        if any(ext in full_url.lower() for ext in ['.jpg', '.jpeg', '.png', '.gif', '/wp-content/uploads/']): continue
+        if any(db in url_path for db in ['/bridgedatabase/', '/unit-details/', '/operative-tariff/details/', '/hs-code-details/']): continue
+        if '/assesment_home/' in url_path.lower() or '/main/home/' in url_path.lower(): continue
+        if '/nem/' in url_path and url_path.count('nem') > 1: continue
 
-        # 18. CMS Deep Routing Loops (Savar Mutations & SREDA)
-        if '/assesment_home/' in url_path.lower() or '/main/home/' in url_path.lower():
-            continue
-        if '/nem/' in url_path and url_path.count('nem') > 1:
-            continue
+        if any(registry in url_path for registry in ['/public-report/establishment/', '/content/details/', '/profile/', '/contents/pictures', '/success-story/details/']): continue
+        if 'username=' in full_url.lower(): continue
+        if 'page_name=elibrary' in full_url.lower() and '&page=' in full_url.lower(): continue
 
-        # 19. Block User-Generated Content & Massive Registries
-        if any(registry in url_path for registry in ['/public-report/establishment/', '/content/details/', '/profile/', '/contents/pictures', '/success-story/details/']):
-            continue
-        if 'username=' in full_url.lower():
-            continue
-        if 'page_name=elibrary' in full_url.lower() and '&page=' in full_url.lower():
-            continue
-        # ==========================================
-
-        # Only keep links belonging to the exact same base domain
         if full_url.startswith(base_domain) and not full_url.endswith(('.pdf', '.zip', '.doc', '.xlsx')):
             discovered_links.add(full_url)
             
+    # ==========================================
+    # PARSER ROUTING WITH SEMAPHORE
+    # ==========================================
     if is_javascript_heavy(soup):
-        final_markdown = await parse_with_crawl4ai(url)
+        # 🚦 THE CONCURRENCY BOUNCER
+        async with BROWSER_SEMAPHORE:
+            print(f"      [🚦] Browser Slot Acquired -> {url}")
+            final_markdown = await parse_with_crawl4ai(url)
     else:
+        # Static runs instantly
         final_markdown = parse_with_markdownify(html_content)
 
     if final_markdown:
-        # ==========================================
-        # POST-PARSE SANITIZATION (RAG Poison Prevention)
-        # ==========================================
         md_lower = final_markdown.lower().strip()
         
-        # Trap 1: Cloudflare & Anti-Bot Waiting Rooms
         if "just a moment" in md_lower or "enable javascript and cookies" in md_lower or "cloudflare" in md_lower:
             print(f"      [!] Cloudflare Bot Trap Detected! Discarding payload.")
-            return list(discovered_links) # Return links (if any) but DO NOT save to DB
+            return list(discovered_links)
             
-        # Trap 2: Empty or micro-pages
         if len(md_lower) < 50:
             print(f"      [!] Payload too small ({len(md_lower)} chars). Discarding.")
             return list(discovered_links)
 
-        # If it passes the checks, save it to the database
         save_crawled_data(url, final_markdown)
     
     return list(discovered_links)
+
+
+async def fleet_memory_monitor(interval=30, log_file="data/fleet_memory.log"):
+    main_process = psutil.Process(os.getpid())
+    os.makedirs(os.path.dirname(log_file), exist_ok=True)
+    
+    with open(log_file, "a", encoding="utf-8") as f:
+        f.write(f"\n{'='*50}\n🚀 NEW FLEET LAUNCHED: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n{'='*50}\n")
+
+    while True:
+        try:
+            total_mem = main_process.memory_info().rss
+            for child in main_process.children(recursive=True):
+                total_mem += child.memory_info().rss
+                
+            mem_mb = total_mem / 1024 / 1024
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            log_message = f"[{timestamp}] 🖥️ [FLEET VITAL] Total System RAM: {mem_mb:.2f} MB\n"
+            
+            print(log_message.strip())
+            with open(log_file, "a", encoding="utf-8") as f:
+                f.write(log_message)
+            
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            pass
+            
+        await asyncio.sleep(interval)   
+
 # ==========================================
 # ORCHESTRATOR
 # ==========================================
 async def run_domain_spider():
-    # 1. Load the text file into the seed table
     load_seeds_from_txt()
-    
-    print("\n🚀 Starting Domain-by-Domain Spider...\n")
+    print("\n🚀 Starting Spider Fleet...\n")
     
     while True:
-        # OUTER LOOP: Get the next website
         current_website = get_next_pending_website()
         
-        if not current_website:
-            print("[*] All websites in the text file have been fully crawled! Shutting down.")
-            break
+        # ----------------------------------------------------
+        # 1. NORMAL DOMAIN PROCESSING
+        # ----------------------------------------------------
+        if current_website:
+            print("="*50)
+            print(f"[*] STARTING NEW DOMAIN: {current_website}")
+            print("="*50)
             
-        print("="*50)
-        print(f"[*] STARTING NEW DOMAIN: {current_website}")
-        print("="*50)
-        
-        # Inject the root domain into the spider queue to kick off the inner loop
-        add_urls_to_queue([current_website], current_website)
-        
-        # INNER LOOP: Crawl all pages belonging to THIS domain
-        while True:
-            current_webpage = get_next_pending_webpage(current_website)
+            add_urls_to_queue([current_website], current_website)
             
-            if not current_webpage:
-                print(f"[+] Domain exhausted. Finishing up: {current_website}")
-                mark_website_completed(current_website)
-                break # Exit the inner loop, move to the next website
+            while True:
+                current_webpage = get_next_pending_webpage(current_website)
                 
-            try:
-                new_links = await process_url(current_webpage, current_website)
-                add_urls_to_queue(new_links, current_website)
-                update_webpage_status(current_webpage, 'completed')
-            except Exception as e:
-                print(f"      [!] Error processing {current_webpage}: {e}")
-                update_webpage_status(current_webpage, 'failed')
+                if not current_webpage:
+                    print(f"[+] Domain exhausted. Finishing up: {current_website}")
+                    mark_website_completed(current_website)
+                    break 
+                    
+                try:
+                    new_links = await process_url(current_webpage, current_website)
+                    add_urls_to_queue(new_links, current_website)
+                    update_webpage_status(current_webpage, 'completed')
+                except Exception as e:
+                    print(f"      [!] Error processing {current_webpage}: {e}")
+                    update_webpage_status(current_webpage, 'failed')
+                    
+                await asyncio.sleep(0.5)
+
+        # ----------------------------------------------------
+        # 2. SCAVENGER MODE (The Deadlock Fix)
+        # ----------------------------------------------------
+        else:
+            pending_seeds, pending_pages = get_global_pending_counts()
+            
+            if pending_seeds == 0 and pending_pages == 0:
+                print("[*] 🏁 All seed domains and internal pages have been completely crawled! Shutting down.")
+                break
                 
-            await asyncio.sleep(0.5)
+            # If seeds are out but pages remain, pivot to scavenger mode to hunt orphans
+            scavenger_result = get_any_pending_webpage()
+            
+            if scavenger_result:
+                orphan_url, orphan_domain = scavenger_result
+                print(f"[*] SCAVENGER MODE: Picked up orphaned page -> {orphan_url}")
+                try:
+                    new_links = await process_url(orphan_url, orphan_domain)
+                    add_urls_to_queue(new_links, orphan_domain)
+                    update_webpage_status(orphan_url, 'completed')
+                except Exception as e:
+                    print(f"      [!] Error processing {orphan_url}: {e}")
+                    update_webpage_status(orphan_url, 'failed')
+            else:
+                # Pages exist but are actively being processed by other workers. Just wait.
+                await asyncio.sleep(5)
+
+
+async def main():
+    monitor_task = asyncio.create_task(fleet_memory_monitor(interval=30, log_file="data/fleet_memory.log"))
+    
+    print("🚀 Launching fleet...")
+    await run_domain_spider() 
+    
+    monitor_task.cancel()
 
 if __name__ == "__main__":
-    asyncio.run(run_domain_spider())
+    asyncio.run(main())
