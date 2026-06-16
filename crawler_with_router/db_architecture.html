@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>gov_spider_db Architecture</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+    <style>
+        body { margin: 0; padding: 0; background-color: #0f172a; color: #f8fafc; font-family: monospace; }
+        #main { width: 100vw; height: 100vh; }
+        .header { position: absolute; top: 20px; left: 20px; z-index: 10; }
+        h1 { margin: 0; font-size: 24px; color: #38bdf8; }
+        p { margin: 5px 0 0 0; color: #94a3b8; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>gov_spider_db Pipeline</h1>
+        <p>Total Size: ~18 GB | Total Rows: ~4.8M</p>
+    </div>
+    <div id="main"></div>
+
+    <script>
+        var chartDom = document.getElementById('main');
+        var myChart = echarts.init(chartDom, 'dark');
+        var option;
+
+        const data = {
+            name: 'gov_spider_db\n(~18 GB)',
+            children: [
+                {
+                    name: 'seed_websites\n(39,752 rows | 11 MB)',
+                    children: [
+                        { name: 'PK: website_url' },
+                        { name: 'Status: Completed' }
+                    ]
+                },
+                {
+                    name: 'spider_queue\n(2,774,723 rows | 4.6 GB)',
+                    children: [
+                        { name: 'Completed: 2,774,374' },
+                        { name: 'Failed: 345 (Timeouts)' },
+                        { name: 'Avg Speed: 474.8 pages/min' }
+                    ]
+                },
+                {
+                    name: 'crawled_data\n(2,025,113 rows | ~13 GB)',
+                    children: [
+                        { name: 'raw_markdown (9.3 GB)' },
+                        { name: 'snippet (2.1 GB)' },
+                        { name: 'keywords (2.1 GB)' }
+                    ]
+                },
+                {
+                    name: 'domain_hierarchy\n(39,750 rows | 65 MB)',
+                    children: [
+                        { name: 'PK: website' },
+                        { name: 'web_pages: TEXT[]' }
+                    ]
+                }
+            ]
+        };
+
+        option = {
+            backgroundColor: '#0f172a',
+            tooltip: { trigger: 'item', triggerOn: 'mousemove' },
+            series: [
+                {
+                    type: 'tree',
+                    data: [data],
+                    top: '10%', left: '15%', bottom: '10%', right: '20%',
+                    symbolSize: 12,
+                    label: {
+                        position: 'left',
+                        verticalAlign: 'middle',
+                        align: 'right',
+                        fontSize: 14,
+                        color: '#e2e8f0',
+                        backgroundColor: '#1e293b',
+                        padding: [6, 10],
+                        borderRadius: 4
+                    },
+                    leaves: {
+                        label: {
+                            position: 'right',
+                            verticalAlign: 'middle',
+                            align: 'left',
+                            color: '#94a3b8',
+                            backgroundColor: 'transparent'
+                        }
+                    },
+                    emphasis: { focus: 'descendant' },
+                    expandAndCollapse: true,
+                    animationDuration: 550,
+                    animationDurationUpdate: 750
+                }
+            ]
+        };
+
+        myChart.setOption(option);
+        window.addEventListener('resize', function() { myChart.resize(); });
+    </script>
+</body>
+</html>
