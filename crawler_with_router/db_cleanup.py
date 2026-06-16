@@ -9,62 +9,46 @@ DB_CONFIG = {
     "port": "5432"
 }
 
-def cleanup_recent_batch():
-    print("🧹 Starting Database Cleanup for the 2026-06-03 batch...")
+def total_ecosystem_reset():
+    print("🧹 Starting Total Database Purge for National Portal Seed Re-Architecture...")
     conn = None
     try:
         conn = psycopg2.connect(**DB_CONFIG)
         cursor = conn.cursor()
 
-        # The date of the botched crawl from your logs
-        TARGET_DATE = '2026-06-03'
+        # Disable triggers temporarily to ensure fast execution and avoid lock stalls
+        cursor.execute("SET CONSTRAINTS ALL DEFERRED;")
 
-        # 1. Delete any corrupted/empty payloads saved during this batch
-        cursor.execute("""
-            DELETE FROM crawled_data 
-            WHERE url IN (
-                SELECT url FROM spider_queue WHERE added_at >= %s
-            );
-        """, (TARGET_DATE,))
-        deleted_data = cursor.rowcount
-        print(f"✅ Deleted {deleted_data} payloads from crawled_data.")
+        # 1. Purge Crawled Data Payloads
+        print("Executing TRUNCATE on crawled_data...")
+        cursor.execute("TRUNCATE TABLE crawled_data RESTART IDENTITY CASCADE;")
+        print("   ✅ Wiped all extracted page data payloads.")
 
-        # 2. Reset the affected seed websites back to 'pending'
-        cursor.execute("""
-            UPDATE seed_websites 
-            SET status = 'pending' 
-            WHERE website_url IN (
-                SELECT DISTINCT base_domain FROM spider_queue WHERE added_at >= %s
-            );
-        """, (TARGET_DATE,))
-        reset_seeds = cursor.rowcount
-        print(f"✅ Reset {reset_seeds} seed domains to 'pending'.")
+        # 2. Purge Domain Hierarchy Mappings
+        print("Executing TRUNCATE on domain_hierarchy...")
+        cursor.execute("TRUNCATE TABLE domain_hierarchy RESTART IDENTITY CASCADE;")
+        print("   ✅ Cleared old domain relationship mappings.")
 
-        # 3. Clean out the domain hierarchy map for these seeds
-        cursor.execute("""
-            DELETE FROM domain_hierarchy 
-            WHERE website IN (
-                SELECT DISTINCT base_domain FROM spider_queue WHERE added_at >= %s
-            );
-        """, (TARGET_DATE,))
-        deleted_hierarchy = cursor.rowcount
-        print(f"✅ Cleared {deleted_hierarchy} domain hierarchy maps.")
+        # 3. Purge Spider Processing Queue
+        print("Executing TRUNCATE on spider_queue...")
+        cursor.execute("TRUNCATE TABLE spider_queue RESTART IDENTITY CASCADE;")
+        print("   ✅ Purged all pending and in-flight crawl targets.")
 
-        # 4. Completely purge the spider_queue for this batch 
-        # (This forces the crawler to re-discover the links naturally)
-        cursor.execute("""
-            DELETE FROM spider_queue WHERE added_at >= %s;
-        """, (TARGET_DATE,))
-        deleted_queue = cursor.rowcount
-        print(f"✅ Purged {deleted_queue} queued pages.")
+        # 4. Clear and Reset Seed Websites
+        # Since the foundational seeds are changing to a strict District-level maximum,
+        # we completely clear this out so your new bangladesh.gov.bd scrapper has a clean slate.
+        print("Executing TRUNCATE on seed_websites...")
+        cursor.execute("TRUNCATE TABLE seed_websites RESTART IDENTITY CASCADE;")
+        print("   ✅ Flushed old seed domain cache.")
 
-        # Commit the transaction
+        # Commit the transaction to apply changes permanently
         conn.commit()
-        print("\n🎉 Cleanup Complete! The DB is primed for a fresh run.")
+        print("\n🎉 Total Reset Complete! The database tables are empty, clean, and perfectly primed for the new District-level seeds.")
         
     except Exception as e:
-        print(f"❌ Database error: {e}")
+        print(f"\n❌ Database error during absolute purge: {e}")
         if conn:
+            print("🔄 Rolling back changes...")
             conn.rollback()
     finally:
         if conn:
@@ -72,4 +56,9 @@ def cleanup_recent_batch():
             conn.close()
 
 if __name__ == "__main__":
-    cleanup_recent_batch()
+    # Safety confirmation prompt to prevent accidental execution in production envs
+    confirm = input("⚠️ WARNING: This will completely wipe all crawled data, queues, and seed lists. Type 'RESET' to confirm: ")
+    if confirm.strip() == "RESET":
+        total_ecosystem_reset()
+    else:
+        print("❌ Reset aborted by user.")
