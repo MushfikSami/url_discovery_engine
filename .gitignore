@@ -1,5 +1,6 @@
 # Crawler logs
 crawler_with_router/crawler_logs/
+crawler_with_router/crawler_logs/worker_*.log
 *.log
 
 # Data files
