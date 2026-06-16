@@ -1,5 +1,5 @@
 # Crawler logs - ignore all files in crawler_logs directory
-crawler_with_router/crawler_logs/
+crawler_with_router/crawler_logs/*.log
 
 # Data files
 crawler_with_router/data/
