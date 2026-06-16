@@ -18,3 +18,4 @@ crawler_with_router/**/*.csv
 
 # Compressed files
 *.gz
+crawler_with_router/crawler_logs/.*
