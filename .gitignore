@@ -1,8 +1,10 @@
 # Log files
 url_discovery_engine/crawler_with_router/crawler_logs/
+/crawler_with_router/crawler_logs/
 
 # Data files
 url_discovery_engine/crawler_with_router/data/
+/crawler_with_router/data/
 
 # Compressed files
 *.gz
