@@ -11,3 +11,4 @@ __pycache__/
 
 # Compressed files
 *.gz
+crawler_with_router/crawler_logs/worker_1.log
