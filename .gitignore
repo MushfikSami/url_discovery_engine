@@ -1,22 +1,14 @@
-# Log files
-url_discovery_engine/crawler_with_router/crawler_logs/
+# Crawler logs
 crawler_with_router/crawler_logs/
-url_discovery_engine/crawler_with_router/**/*.log
-crawler_with_router/**/*.log
+*.log
 
 # Data files
-url_discovery_engine/crawler_with_router/data/
 crawler_with_router/data/
-url_discovery_engine/crawler_with_router/**/*.json
-crawler_with_router/**/*.json
-url_discovery_engine/crawler_with_router/**/*.sqlite
-crawler_with_router/**/*.sqlite
-url_discovery_engine/crawler_with_router/**/*.db
-crawler_with_router/**/*.db
-url_discovery_engine/crawler_with_router/**/*.csv
-crawler_with_router/**/*.csv
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
 
 # Compressed files
 *.gz
-crawler_with_router/crawler_logs/.*log
-crawler_with_router/crawler_logs/worker_1.log
