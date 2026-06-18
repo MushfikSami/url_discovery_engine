@@ -1,7 +1,4 @@
 import psycopg2
-from docx import Document
-from docx.shared import Pt
-import os
 
 # ==========================================
 # CONFIGURATION
@@ -25,73 +22,60 @@ TOPIC_KEYWORDS = {
     "স্বাস্থ্য সেবা (Health Services)": ["স্বাস্থ্য সেবা", "হাসপাতাল", "চিকিৎসা", "স্বাস্থ্য অধিদপ্তর", "DGHS", "DGDA"]
 }
 
-def generate_docx():
-    print("📝 Initializing Document Generator...")
-    doc = Document()
-    
-    # Add a main title to the document
-    title = doc.add_heading('Gov Spider - OCR Quality Assurance Samples', 0)
-    doc.add_paragraph("This document contains full OCR extractions from 3 random PDFs per service category for data quality review.\n")
-    
+def monitor_crawled_pdfs():
+    print("🔍 Connecting to database to monitor OCR PDF & Gazette counts...\n")
     conn = psycopg2.connect(**DB_CONFIG)
+    
     try:
         cursor = conn.cursor()
         
+        # 1. সর্বমোট কতগুলো PDF OCR হয়েছে তার কাউন্ট বের করা
+        cursor.execute("""
+            SELECT COUNT(*) 
+            FROM crawled_data 
+            WHERE raw_markdown LIKE '%%[OCR EXTRACTED FROM ATTACHED PDF]%%';
+        """)
+        total_ocr_pdfs = cursor.fetchone()[0]
+        
+        print(f"📊 TOTAL PDFs SUCCESSFULLY OCR'd IN DB: {total_ocr_pdfs}\n")
+        
+        print("==================================================================================")
+        print(f"{'CATEGORY / TOPIC':<38} | {'TOTAL PDFs':<12} | {'GAZETTE PDFs':<12}")
+        print("==================================================================================")
+        
+        # 2. প্রতিটি টপিকের জন্য আলাদাভাবে কাউন্ট এবং গেজেট কাউন্ট বের করা
         for topic, keywords in TOPIC_KEYWORDS.items():
-            print(f"🔍 Fetching up to 3 samples for: {topic}...")
-            
             like_conditions = " OR ".join([f"raw_markdown ILIKE %s" for _ in keywords])
             params = [f"%{kw}%" for kw in keywords]
             
-            # Fetch exactly 3 random samples
+            # 🛠️ UPDATE: CASE WHEN ব্যবহার করে একই কোয়েরিতে গেজেটের সংখ্যা বের করা হয়েছে
             query = f"""
-                SELECT url, raw_markdown 
+                SELECT 
+                    COUNT(url) AS total_pdfs,
+                    COALESCE(SUM(CASE WHEN raw_markdown ILIKE '%%বাংলাদেশ গেজেট%%' THEN 1 ELSE 0 END), 0) AS gazette_pdfs
                 FROM crawled_data 
                 WHERE raw_markdown LIKE '%%[OCR EXTRACTED FROM ATTACHED PDF]%%'
-                AND ({like_conditions})
-                ORDER BY RANDOM()
-                LIMIT 3;
+                AND ({like_conditions});
             """
             
             cursor.execute(query, params)
-            samples = cursor.fetchall()
+            result = cursor.fetchone()
             
-            if not samples:
-                print(f"   ⏳ Skipping {topic} (No data yet)")
-                continue
-                
-            # Add Topic Heading
-            doc.add_heading(f'📌 Category: {topic}', level=1)
+            count = result[0]
+            gazette_count = int(result[1])
             
-            for i, (url, markdown) in enumerate(samples):
-                doc.add_heading(f'Sample {i+1}', level=2)
-                doc.add_paragraph(f"🔗 Source URL: {url}", style='Intense Quote')
+            if count > 0:
+                print(f"✅ {topic:<36} | {count:<12} | {gazette_count:<12}")
+            else:
+                print(f"⏳ {topic:<36} | {count:<12} | {gazette_count:<12}")
                 
-                try:
-                    # Extract the OCR part to hide raw HTML markdown
-                    ocr_segment = markdown.split("[OCR EXTRACTED FROM ATTACHED PDF] ###")[1].strip()
-                    
-                    # Add the text paragraph by paragraph to maintain structure
-                    for line in ocr_segment.split('\n'):
-                        if line.strip():
-                            doc.add_paragraph(line.strip())
-                            
-                except Exception as e:
-                    doc.add_paragraph(f"[Error parsing OCR segment: {e}]")
-                
-                doc.add_paragraph("\n" + "="*50 + "\n")
-                
-            doc.add_page_break() # Keep each category's samples separated nicely
-            
-        output_file = "OCR_Quality_Samples.docx"
-        doc.save(output_file)
-        print(f"\n✅ Success! Saved all samples to: '{output_file}'")
-        print("📥 You can now download this file from your server to share with the Data Team.")
+        print("==================================================================================\n")
+        print("🚀 Monitoring complete. Run this script anytime to check progress.")
         
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"❌ Database Error: {e}")
     finally:
         conn.close()
 
 if __name__ == "__main__":
-    generate_docx()
+    monitor_crawled_pdfs()
