@@ -29,7 +29,7 @@ DB_CONFIG = {
 CHECKPOINT_FILE = "data/vision_checkpoint.txt"
 MAX_PAGES_PER_PDF = 30 
 NUM_NETWORK_WORKERS = 50
-NUM_GPU_WORKERS = 2
+NUM_GPU_WORKERS = 3
 
 client = AsyncOpenAI(api_key=VLLM_API_KEY, base_url=VLLM_API_BASE)
 
