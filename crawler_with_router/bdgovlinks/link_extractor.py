@@ -53,7 +53,7 @@ def extract_government_links(target_url):
 
 if __name__ == "__main__":
     # The website you found
-    TARGET_WEBSITE = "http://bdgovlinks.com"
+    TARGET_WEBSITE = "https://standardebooks.org/ebooks/ring-lardner/gullibles-travels/text"
     
     total_links, gov_links = extract_government_links(TARGET_WEBSITE)
     
