@@ -1,14 +1,57 @@
-# Crawler logs - ignore all files in crawler_logs directory
-crawler_with_router/crawler_logs/*.log
-
-# Data files
-crawler_with_router/data/
-
-# Python cache
+# ===== Python =====
 __pycache__/
 *.pyc
 *.pyo
+*.pyd
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
 
-# Compressed files
-*.gz
+# ===== Tooling caches =====
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.nox/
+.coverage
+htmlcov/
+.deepeval/
+
+# ===== Local agent / editor config =====
+# .claude here is a separate vendored project with its own nested git repo.
+.claude/
+.idea/
+.vscode/
+
+# ===== Logs =====
+crawler_with_router/crawler_logs/*.log
 crawler_with_router/crawler_logs/worker_1.log
+*.log
+
+# ===== Runtime data / checkpoints (not source) =====
+crawler_with_router/data/
+data_refinement/data/
+
+# ===== recursive_crawler: keep code, exclude data & DB =====
+recursive_crawler/db_data/
+# Whole data/ dir is runtime dumps (19GB crawler_state.json, 1.3GB .sql,
+# 913MB bd_gov_ecosystem.md) — never committable. Whitelist small seed files
+# with a negation below if you need them tracked.
+recursive_crawler/data/
+recursive_crawler/**/__pycache__/
+recursive_crawler/.deepeval/
+# PageIndex is a third-party clone (github.com/VectifyAI/PageIndex) with its own
+# .git — don't embed it as a broken gitlink; re-clone it locally as needed.
+recursive_crawler/PageIndex/
+
+# ===== JSON (often huge crawler state dumps, e.g. 19GB crawler_state.json) =====
+# Blanket-ignore JSON. Whitelist any config JSON you DO want tracked with a
+# negation below, e.g.:  !some/config.json
+*.json
+
+# ===== Large binaries / archives =====
+*.gz
+*.xapk
