@@ -52,6 +52,11 @@ recursive_crawler/PageIndex/
 # negation below, e.g.:  !some/config.json
 *.json
 
+# ===== R&D generated artifacts (reproducible from scripts) =====
+data_refinement/.hf_cache/
+data_refinement/rnd_counts_*.npy
+data_refinement/rnd_report_*.png
+
 # ===== Large binaries / archives =====
 *.gz
 *.xapk

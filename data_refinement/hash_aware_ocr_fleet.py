@@ -17,14 +17,23 @@ This script keeps a per-PDF content hash in `pdf_ocr_cache`. On every run it
 downloads each PDF, computes its SHA-256, and:
 
   * hash unchanged  -> SKIP OCR. If the cached OCR block is somehow missing
-                       from `crawled_data` (row was re-crawled / reset), it is
+                       from `crawled_data_ocr` (row was reset), it is
                        re-inserted from the cache -- still no OCR.
-  * hash changed    -> RE-OCR, replace that PDF's block in `raw_markdown`,
+  * hash changed    -> RE-OCR, replace that PDF's block in `crawled_data_ocr`,
                        update the cache.
   * new PDF         -> OCR, insert cache, append the block.
 
-The `raw_markdown` update is idempotent: each PDF's OCR text is wrapped in
-unique START/END markers keyed by the PDF URL, so a re-run replaces the block
+OCR text lives in its own table, `crawled_data_ocr(url, ocr_markdown,
+updated_at)`, keyed by the page URL -- NOT appended into
+`crawled_data.raw_markdown`. `raw_markdown` stays pure HTML-derived content;
+`crawled_data_ocr.ocr_markdown` holds everything OCR'd from that page's PDFs.
+Pre-existing rows where legacy fleets already appended OCR text into
+`raw_markdown` are handled by the one-time `migrate_split_ocr_table.py`
+migration, which lives alongside this script and reuses its
+`split_markdown_ocr` helper.
+
+Within `ocr_markdown`, each PDF's OCR text is still wrapped in unique
+START/END markers keyed by the PDF URL, so a re-run replaces that PDF's block
 in place instead of appending a duplicate.
 
 Design for testability
@@ -69,6 +78,7 @@ DB_CONFIG = {
 
 CACHE_TABLE = "pdf_ocr_cache"
 CRAWLED_TABLE = "crawled_data"
+OCR_TABLE = "crawled_data_ocr"
 
 CHECKPOINT_FILE = "data/hash_ocr_checkpoint.txt"
 MAX_PAGES_PER_PDF = 30
@@ -153,7 +163,7 @@ def replace_ocr_block(markdown: str, pdf_url: str, new_block: str) -> str:
 
     If a block for `pdf_url` already exists (matched by its markers) it is
     removed first, then the new block is appended. This is what stops re-runs
-    from duplicating OCR text into `raw_markdown`.
+    from duplicating OCR text into `ocr_markdown`.
     """
     markdown = markdown or ""
     start, end = _markers(pdf_url)
@@ -164,6 +174,43 @@ def replace_ocr_block(markdown: str, pdf_url: str, new_block: str) -> str:
     )
     cleaned = pattern.sub("", markdown)
     return cleaned + new_block
+
+
+def find_ocr_split_index(markdown: str):
+    """Return the index in `markdown` where OCR-appended content begins, or
+    None if no OCR markers are present.
+
+    Recognizes both marker styles that have ever been written into
+    `crawled_data.raw_markdown`:
+      * legacy plain tag   -- OCR_HUMAN_TAG (no per-PDF boundary)
+      * hash-aware markers -- "<!-- OCR-PDF-START ..." (always precedes the
+        human tag within its own block, per `build_ocr_block`)
+    Takes the earliest match so multiple concatenated legacy appends are all
+    captured as one OCR suffix.
+    """
+    if not markdown:
+        return None
+    candidates = [
+        idx
+        for idx in (markdown.find(OCR_HUMAN_TAG), markdown.find("<!-- OCR-PDF-START"))
+        if idx != -1
+    ]
+    return min(candidates) if candidates else None
+
+
+def split_markdown_ocr(markdown: str):
+    """Split a `raw_markdown` value into (base_markdown, ocr_markdown).
+
+    `ocr_markdown` is None if no OCR content is present. Used by the one-time
+    migration to pull legacy OCR text out of `crawled_data.raw_markdown` into
+    `crawled_data_ocr`.
+    """
+    idx = find_ocr_split_index(markdown)
+    if idx is None:
+        return markdown, None
+    base = markdown[:idx].rstrip()
+    ocr = markdown[idx:].strip()
+    return base, (ocr or None)
 
 
 # ==========================================
@@ -256,16 +303,72 @@ def set_markdown(conn, page_url: str, markdown: str,
     conn.commit()
 
 
-def apply_ocr_block(conn, page_url, pdf_url, ocr_text,
-                    crawled_table: str = None):
-    """Read-modify-write the row's markdown, replacing this PDF's block."""
+def page_exists(conn, page_url: str, crawled_table: str = None) -> bool:
     crawled_table = crawled_table or CRAWLED_TABLE
-    current = get_markdown(conn, page_url, crawled_table)
-    if current is None:
-        return False  # page row vanished; nothing to attach to
+    with conn.cursor() as cur:
+        cur.execute(f"SELECT 1 FROM {crawled_table} WHERE url = %s;", (page_url,))
+        return cur.fetchone() is not None
+
+
+def ensure_ocr_table(conn, ocr_table: str = None):
+    """The OCR portion of a page, kept separate from `crawled_data.raw_markdown`.
+
+    No hard FOREIGN KEY to `crawled_data(url)` -- the table name is
+    caller-configurable (tests use throwaway names), and enforcing it would
+    tie DROP ordering across two dynamically named tables. The relationship
+    is logical (same `url` values), guarded at write time by `page_exists`.
+    """
+    ocr_table = ocr_table or OCR_TABLE
+    with conn.cursor() as cur:
+        cur.execute(
+            f"""
+            CREATE TABLE IF NOT EXISTS {ocr_table} (
+                url          TEXT PRIMARY KEY,
+                ocr_markdown TEXT,
+                updated_at   TIMESTAMPTZ DEFAULT NOW()
+            );
+            """
+        )
+    conn.commit()
+
+
+def get_ocr_markdown(conn, page_url: str, ocr_table: str = None):
+    ocr_table = ocr_table or OCR_TABLE
+    with conn.cursor() as cur:
+        cur.execute(
+            f"SELECT ocr_markdown FROM {ocr_table} WHERE url = %s;", (page_url,)
+        )
+        row = cur.fetchone()
+    return row[0] if row else None
+
+
+def set_ocr_markdown(conn, page_url: str, ocr_markdown: str,
+                     ocr_table: str = None):
+    ocr_table = ocr_table or OCR_TABLE
+    with conn.cursor() as cur:
+        cur.execute(
+            f"""
+            INSERT INTO {ocr_table} (url, ocr_markdown, updated_at)
+            VALUES (%s, %s, NOW())
+            ON CONFLICT (url) DO UPDATE SET
+                ocr_markdown = EXCLUDED.ocr_markdown,
+                updated_at   = NOW();
+            """,
+            (page_url, ocr_markdown),
+        )
+    conn.commit()
+
+
+def apply_ocr_block(conn, page_url, pdf_url, ocr_text,
+                    ocr_table: str = None, crawled_table: str = None):
+    """Read-modify-write `crawled_data_ocr.ocr_markdown`, replacing this PDF's
+    block. Never touches `crawled_data.raw_markdown`."""
+    if not page_exists(conn, page_url, crawled_table):
+        return False  # page row vanished; nothing to attach OCR text to
+    current = get_ocr_markdown(conn, page_url, ocr_table) or ""
     new_block = build_ocr_block(pdf_url, ocr_text)
     updated = replace_ocr_block(current, pdf_url, new_block)
-    set_markdown(conn, page_url, updated, crawled_table)
+    set_ocr_markdown(conn, page_url, updated, ocr_table)
     return True
 
 
@@ -301,8 +404,8 @@ async def handle_pdf(conn, page_url, pdf_url, pdf_bytes, ocr_func):
     cached_hash = cached[0] if cached else None
     cached_text = cached[1] if cached else None
 
-    markdown = await asyncio.to_thread(get_markdown, conn, page_url)
-    present = block_present(markdown, pdf_url)
+    ocr_markdown = await asyncio.to_thread(get_ocr_markdown, conn, page_url)
+    present = block_present(ocr_markdown, pdf_url)
 
     action = decide_action(cached_hash, new_hash, present)
 
@@ -470,6 +573,7 @@ async def run_fleet():
 
     setup_conn = psycopg2.connect(**DB_CONFIG)
     ensure_cache_table(setup_conn)
+    ensure_ocr_table(setup_conn)
 
     processed_urls = set()
     if os.path.exists(CHECKPOINT_FILE):

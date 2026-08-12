@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>LLM Token-Size R&amp;D — GovBD Crawl Corpus</title>
+<style>
+  :root {
+    --plane:#f9f9f7; --surface-1:#fcfcfb;
+    --text-primary:#0b0b0b; --text-secondary:#52514e; --muted:#898781;
+    --grid:#e1e0d9; --axis:#c3c2b7; --border:rgba(11,11,11,0.10);
+    --series:#256abf; --series-soft:#cde2fb;
+  }
+  :root[data-theme="dark"] {
+    --plane:#0d0d0d; --surface-1:#1a1a19;
+    --text-primary:#ffffff; --text-secondary:#c3c2b7; --muted:#898781;
+    --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,0.10);
+    --series:#3987e5; --series-soft:#184f95;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --plane:#0d0d0d; --surface-1:#1a1a19;
+      --text-primary:#ffffff; --text-secondary:#c3c2b7; --muted:#898781;
+      --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,0.10);
+      --series:#3987e5; --series-soft:#184f95;
+    }
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; background:var(--plane); color:var(--text-primary);
+    font-family: system-ui,-apple-system,"Segoe UI",sans-serif; line-height:1.45;
+  }
+  .wrap { max-width:960px; margin:0 auto; padding:32px 20px 64px; }
+  header { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; }
+  h1 { font-size:26px; margin:0 0 4px; letter-spacing:-0.01em; }
+  .lede { color:var(--text-secondary); max-width:640px; margin:0; font-size:14px; }
+  .tokline { color:var(--muted); font-size:12.5px; margin-top:8px; }
+  .toggle {
+    border:1px solid var(--border); background:var(--surface-1); color:var(--text-secondary);
+    border-radius:8px; padding:7px 12px; font:inherit; font-size:13px; cursor:pointer; white-space:nowrap;
+  }
+  .panel {
+    background:var(--surface-1); border:1px solid var(--border); border-radius:14px;
+    padding:22px 22px 12px; margin-top:24px;
+  }
+  h2 { font-size:18px; margin:0 0 2px; }
+  .sub { color:var(--text-secondary); font-size:13px; margin:0 0 18px; }
+  .kpi-row {
+    display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:20px;
+  }
+  @media (min-width:720px) { .kpi-row { grid-template-columns:repeat(6,1fr); } }
+  .tile {
+    border:1px solid var(--border); border-radius:10px; padding:12px 12px 11px; background:var(--plane);
+  }
+  .tile-label { color:var(--text-secondary); font-size:11.5px; }
+  .tile-value { font-size:22px; font-weight:600; letter-spacing:-0.01em; margin:2px 0 1px; }
+  .tile-sub { color:var(--muted); font-size:11px; font-variant-numeric:tabular-nums; }
+  .chart-title { font-size:13px; color:var(--text-secondary); margin:4px 2px 6px; }
+  .chart { width:100%; height:auto; display:block; }
+  .grid { stroke:var(--grid); stroke-width:1; }
+  .axis { stroke:var(--axis); stroke-width:1; }
+  .bar { fill:var(--series); }
+  .hit { fill:transparent; }
+  .col:hover .bar, .col:focus .bar { fill:var(--text-primary); opacity:0.85; }
+  .col { outline:none; }
+  .ytick { fill:var(--muted); font-size:11px; text-anchor:end; font-variant-numeric:tabular-nums; }
+  .xtick { fill:var(--muted); font-size:10.5px; text-anchor:start; }
+  .caplabel { fill:var(--text-secondary); font-size:10.5px; text-anchor:middle; font-variant-numeric:tabular-nums; }
+  .axis-title { fill:var(--muted); font-size:11px; }
+  .grid2 { display:grid; gap:18px; grid-template-columns:1fr; }
+  @media (min-width:720px) { .grid2 { grid-template-columns:1fr; } }
+  .ptable { width:100%; border-collapse:collapse; font-size:13px; margin-top:6px; }
+  .ptable th, .ptable td { text-align:right; padding:7px 10px; border-bottom:1px solid var(--border); font-variant-numeric:tabular-nums; }
+  .ptable th:first-child, .ptable td:first-child { text-align:left; font-variant-numeric:normal; }
+  .ptable th { color:var(--text-secondary); font-weight:600; }
+  .ptable tr.summ td { color:var(--text-secondary); }
+  .foot { color:var(--muted); font-size:12px; margin-top:28px; }
+  .swatch { display:inline-block; width:10px; height:10px; border-radius:2px; background:var(--series); margin-right:6px; vertical-align:middle; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>LLM Token-Size R&amp;D — GovBD Crawl Corpus</h1>
+      <p class="lede">Per-row token-size distribution of crawled content, split into
+      the page's own markdown and the OCR text pulled from its attached PDFs.</p>
+      <p class="tokline"><span class="swatch"></span>Tokenizer: <b>cyankiwi/Qwen3.6-35B-A3B-AWQ-4bit</b> · True Qwen3.6 LLM tokens (validated against vLLM /tokenize). Not embedding tokens.</p>
+    </div>
+    <button class="toggle" onclick="tog()">Toggle theme</button>
+  </header>
+
+  
+    <section class="panel">
+      <h2>A · raw_markdown</h2>
+      <p class="sub">crawled_data.raw_markdown — HTML-derived page content (OCR text migrated out).</p>
+      <div class="kpi-row"><div class="tile"><div class="tile-label">Rows analyzed</div><div class="tile-value">140.6K</div><div class="tile-sub">0 empty</div></div><div class="tile"><div class="tile-label">Mean tokens / row</div><div class="tile-value">6,067</div><div class="tile-sub">± 6,018 std</div></div><div class="tile"><div class="tile-label">Median (p50)</div><div class="tile-value">4,710</div><div class="tile-sub">CV 0.99</div></div><div class="tile"><div class="tile-label">p95</div><div class="tile-value">13.5K</div><div class="tile-sub">p90 11.4K</div></div><div class="tile"><div class="tile-label">p99</div><div class="tile-value">20.7K</div><div class="tile-sub">max 897.1K</div></div><div class="tile"><div class="tile-label">Total tokens</div><div class="tile-value">853.3M</div><div class="tile-sub">whole table</div></div></div>
+      <div class="chart-wrap">
+        <div class="chart-title">Distribution of LLM tokens per row</div>
+        <svg viewBox="0 0 860 340" class="chart" role="img" aria-label="Token count histogram"><line x1="56" y1="276.0" x2="844" y2="276.0" class="grid"/><text x="48" y="280.0" class="ytick">0</text><line x1="56" y1="213.0" x2="844" y2="213.0" class="grid"/><text x="48" y="217.0" class="ytick">13,947</text><line x1="56" y1="150.0" x2="844" y2="150.0" class="grid"/><text x="48" y="154.0" class="ytick">27,894</text><line x1="56" y1="87.0" x2="844" y2="87.0" class="grid"/><text x="48" y="91.0" class="ytick">41,842</text><line x1="56" y1="24.0" x2="844" y2="24.0" class="grid"/><text x="48" y="28.0" class="ytick">55,789</text><line x1="56" y1="276.0" x2="844" y2="276.0" class="axis"/><g class="col" tabindex="0"><path d="M67.8,276.0 L67.8,275.4 Q67.8,275.4 67.8,275.4 L115.8,275.4 Q115.8,275.4 115.8,275.4 L115.8,276.0 Z" class="bar"/><rect x="56.0" y="24" width="71.6" height="252" class="hit"><title>0–100 tokens · 125 rows (0.1%)</title></rect><text x="91.8" y="294.0" class="xtick" transform="rotate(35 91.8 294.0)">0–100</text><g class="col" tabindex="0"><path d="M139.5,276.0 L139.5,276.0 Q139.5,276.0 139.5,276.0 L187.5,276.0 Q187.5,276.0 187.5,276.0 L187.5,276.0 Z" class="bar"/><rect x="127.6" y="24" width="71.6" height="252" class="hit"><title>100–250 tokens · 0 rows (0.0%)</title></rect><text x="163.5" y="294.0" class="xtick" transform="rotate(35 163.5 294.0)">100–250</text><g class="col" tabindex="0"><path d="M211.1,276.0 L211.1,276.0 Q211.1,276.0 211.1,276.0 L259.1,276.0 Q259.1,276.0 259.1,276.0 L259.1,276.0 Z" class="bar"/><rect x="199.3" y="24" width="71.6" height="252" class="hit"><title>250–500 tokens · 1 rows (0.0%)</title></rect><text x="235.1" y="294.0" class="xtick" transform="rotate(35 235.1 294.0)">250–500</text><g class="col" tabindex="0"><path d="M282.7,276.0 L282.7,274.9 Q282.7,274.9 282.7,274.9 L330.7,274.9 Q330.7,274.9 330.7,274.9 L330.7,276.0 Z" class="bar"/><rect x="270.9" y="24" width="71.6" height="252" class="hit"><title>500–1,000 tokens · 239 rows (0.2%)</title></rect><text x="306.7" y="294.0" class="xtick" transform="rotate(35 306.7 294.0)">500–1,000</text><g class="col" tabindex="0"><path d="M354.4,276.0 L354.4,253.6 Q354.4,249.6 358.4,249.6 L398.4,249.6 Q402.4,249.6 402.4,253.6 L402.4,276.0 Z" class="bar"/><rect x="342.5" y="24" width="71.6" height="252" class="hit"><title>1,000–2,000 tokens · 5,841 rows (4.2%)</title></rect><text x="378.4" y="243.6" class="caplabel">5,841</text><text x="378.4" y="294.0" class="xtick" transform="rotate(35 378.4 294.0)">1,000–2,000</text><g class="col" tabindex="0"><path d="M426.0,276.0 L426.0,63.8 Q426.0,59.8 430.0,59.8 L470.0,59.8 Q474.0,59.8 474.0,63.8 L474.0,276.0 Z" class="bar"/><rect x="414.2" y="24" width="71.6" height="252" class="hit"><title>2,000–4,000 tokens · 47,854 rows (34.0%)</title></rect><text x="450.0" y="53.8" class="caplabel">47,854</text><text x="450.0" y="294.0" class="xtick" transform="rotate(35 450.0 294.0)">2,000–4,000</text><g class="col" tabindex="0"><path d="M497.6,276.0 L497.6,28.0 Q497.6,24.0 501.6,24.0 L541.6,24.0 Q545.6,24.0 545.6,28.0 L545.6,276.0 Z" class="bar"/><rect x="485.8" y="24" width="71.6" height="252" class="hit"><title>4,000–8,000 tokens · 55,789 rows (39.7%)</title></rect><text x="521.6" y="18.0" class="caplabel">55,789</text><text x="521.6" y="294.0" class="xtick" transform="rotate(35 521.6 294.0)">4,000–8,000</text><g class="col" tabindex="0"><path d="M569.3,276.0 L569.3,155.3 Q569.3,151.3 573.3,151.3 L613.3,151.3 Q617.3,151.3 617.3,155.3 L617.3,276.0 Z" class="bar"/><rect x="557.5" y="24" width="71.6" height="252" class="hit"><title>8,000–16.0K tokens · 27,598 rows (19.6%)</title></rect><text x="593.3" y="145.3" class="caplabel">27,598</text><text x="593.3" y="294.0" class="xtick" transform="rotate(35 593.3 294.0)">8,000–16.0K</text><g class="col" tabindex="0"><path d="M640.9,276.0 L640.9,267.5 Q640.9,263.5 644.9,263.5 L684.9,263.5 Q688.9,263.5 688.9,267.5 L688.9,276.0 Z" class="bar"/><rect x="629.1" y="24" width="71.6" height="252" class="hit"><title>16.0K–32.0K tokens · 2,763 rows (2.0%)</title></rect><text x="664.9" y="294.0" class="xtick" transform="rotate(35 664.9 294.0)">16.0K–32.0K</text><g class="col" tabindex="0"><path d="M712.5,276.0 L712.5,274.6 Q712.5,274.6 712.5,274.6 L760.5,274.6 Q760.5,274.6 760.5,274.6 L760.5,276.0 Z" class="bar"/><rect x="700.7" y="24" width="71.6" height="252" class="hit"><title>32.0K–64.0K tokens · 313 rows (0.2%)</title></rect><text x="736.5" y="294.0" class="xtick" transform="rotate(35 736.5 294.0)">32.0K–64.0K</text><g class="col" tabindex="0"><path d="M784.2,276.0 L784.2,275.5 Q784.2,275.5 784.2,275.5 L832.2,275.5 Q832.2,275.5 832.2,275.5 L832.2,276.0 Z" class="bar"/><rect x="772.4" y="24" width="71.6" height="252" class="hit"><title>64.0K+ tokens · 108 rows (0.1%)</title></rect><text x="808.2" y="294.0" class="xtick" transform="rotate(35 808.2 294.0)">64.0K+</text><text x="56" y="334" class="axis-title">token count per row (binned)</text></svg>
+      </div>
+    </section>
+    
+  
+    <section class="panel">
+      <h2>B · ocr_markdown</h2>
+      <p class="sub">crawled_data_ocr.ocr_markdown — text OCR&#x27;d from a page&#x27;s attached PDFs.</p>
+      <div class="kpi-row"><div class="tile"><div class="tile-label">Rows analyzed</div><div class="tile-value">4,642</div><div class="tile-sub">0 empty</div></div><div class="tile"><div class="tile-label">Mean tokens / row</div><div class="tile-value">33.1K</div><div class="tile-sub">± 147.5K std</div></div><div class="tile"><div class="tile-label">Median (p50)</div><div class="tile-value">4,414</div><div class="tile-sub">CV 4.46</div></div><div class="tile"><div class="tile-label">p95</div><div class="tile-value">136.8K</div><div class="tile-sub">p90 59.8K</div></div><div class="tile"><div class="tile-label">p99</div><div class="tile-value">478.8K</div><div class="tile-sub">max 5.0M</div></div><div class="tile"><div class="tile-label">Total tokens</div><div class="tile-value">153.7M</div><div class="tile-sub">whole table</div></div></div>
+      <div class="chart-wrap">
+        <div class="chart-title">Distribution of LLM tokens per row</div>
+        <svg viewBox="0 0 860 340" class="chart" role="img" aria-label="Token count histogram"><line x1="56" y1="276.0" x2="844" y2="276.0" class="grid"/><text x="48" y="280.0" class="ytick">0</text><line x1="56" y1="213.0" x2="844" y2="213.0" class="grid"/><text x="48" y="217.0" class="ytick">227</text><line x1="56" y1="150.0" x2="844" y2="150.0" class="grid"/><text x="48" y="154.0" class="ytick">454</text><line x1="56" y1="87.0" x2="844" y2="87.0" class="grid"/><text x="48" y="91.0" class="ytick">681</text><line x1="56" y1="24.0" x2="844" y2="24.0" class="grid"/><text x="48" y="28.0" class="ytick">908</text><line x1="56" y1="276.0" x2="844" y2="276.0" class="axis"/><g class="col" tabindex="0"><path d="M67.8,276.0 L67.8,276.0 Q67.8,276.0 67.8,276.0 L115.8,276.0 Q115.8,276.0 115.8,276.0 L115.8,276.0 Z" class="bar"/><rect x="56.0" y="24" width="71.6" height="252" class="hit"><title>0–100 tokens · 0 rows (0.0%)</title></rect><text x="91.8" y="294.0" class="xtick" transform="rotate(35 91.8 294.0)">0–100</text><g class="col" tabindex="0"><path d="M139.5,276.0 L139.5,273.6 Q139.5,269.6 143.5,269.6 L183.5,269.6 Q187.5,269.6 187.5,273.6 L187.5,276.0 Z" class="bar"/><rect x="127.6" y="24" width="71.6" height="252" class="hit"><title>100–250 tokens · 23 rows (0.5%)</title></rect><text x="163.5" y="294.0" class="xtick" transform="rotate(35 163.5 294.0)">100–250</text><g class="col" tabindex="0"><path d="M211.1,276.0 L211.1,254.7 Q211.1,250.7 215.1,250.7 L255.1,250.7 Q259.1,250.7 259.1,254.7 L259.1,276.0 Z" class="bar"/><rect x="199.3" y="24" width="71.6" height="252" class="hit"><title>250–500 tokens · 91 rows (2.0%)</title></rect><text x="235.1" y="244.7" class="caplabel">91</text><text x="235.1" y="294.0" class="xtick" transform="rotate(35 235.1 294.0)">250–500</text><g class="col" tabindex="0"><path d="M282.7,276.0 L282.7,164.0 Q282.7,160.0 286.7,160.0 L326.7,160.0 Q330.7,160.0 330.7,164.0 L330.7,276.0 Z" class="bar"/><rect x="270.9" y="24" width="71.6" height="252" class="hit"><title>500–1,000 tokens · 418 rows (9.0%)</title></rect><text x="306.7" y="154.0" class="caplabel">418</text><text x="306.7" y="294.0" class="xtick" transform="rotate(35 306.7 294.0)">500–1,000</text><g class="col" tabindex="0"><path d="M354.4,276.0 L354.4,28.0 Q354.4,24.0 358.4,24.0 L398.4,24.0 Q402.4,24.0 402.4,28.0 L402.4,276.0 Z" class="bar"/><rect x="342.5" y="24" width="71.6" height="252" class="hit"><title>1,000–2,000 tokens · 908 rows (19.6%)</title></rect><text x="378.4" y="18.0" class="caplabel">908</text><text x="378.4" y="294.0" class="xtick" transform="rotate(35 378.4 294.0)">1,000–2,000</text><g class="col" tabindex="0"><path d="M426.0,276.0 L426.0,80.7 Q426.0,76.7 430.0,76.7 L470.0,76.7 Q474.0,76.7 474.0,80.7 L474.0,276.0 Z" class="bar"/><rect x="414.2" y="24" width="71.6" height="252" class="hit"><title>2,000–4,000 tokens · 718 rows (15.5%)</title></rect><text x="450.0" y="70.7" class="caplabel">718</text><text x="450.0" y="294.0" class="xtick" transform="rotate(35 450.0 294.0)">2,000–4,000</text><g class="col" tabindex="0"><path d="M497.6,276.0 L497.6,109.9 Q497.6,105.9 501.6,105.9 L541.6,105.9 Q545.6,105.9 545.6,109.9 L545.6,276.0 Z" class="bar"/><rect x="485.8" y="24" width="71.6" height="252" class="hit"><title>4,000–8,000 tokens · 613 rows (13.2%)</title></rect><text x="521.6" y="99.9" class="caplabel">613</text><text x="521.6" y="294.0" class="xtick" transform="rotate(35 521.6 294.0)">4,000–8,000</text><g class="col" tabindex="0"><path d="M569.3,276.0 L569.3,147.1 Q569.3,143.1 573.3,143.1 L613.3,143.1 Q617.3,143.1 617.3,147.1 L617.3,276.0 Z" class="bar"/><rect x="557.5" y="24" width="71.6" height="252" class="hit"><title>8,000–16.0K tokens · 479 rows (10.3%)</title></rect><text x="593.3" y="137.1" class="caplabel">479</text><text x="593.3" y="294.0" class="xtick" transform="rotate(35 593.3 294.0)">8,000–16.0K</text><g class="col" tabindex="0"><path d="M640.9,276.0 L640.9,137.6 Q640.9,133.6 644.9,133.6 L684.9,133.6 Q688.9,133.6 688.9,137.6 L688.9,276.0 Z" class="bar"/><rect x="629.1" y="24" width="71.6" height="252" class="hit"><title>16.0K–32.0K tokens · 513 rows (11.1%)</title></rect><text x="664.9" y="127.6" class="caplabel">513</text><text x="664.9" y="294.0" class="xtick" transform="rotate(35 664.9 294.0)">16.0K–32.0K</text><g class="col" tabindex="0"><path d="M712.5,276.0 L712.5,155.4 Q712.5,151.4 716.5,151.4 L756.5,151.4 Q760.5,151.4 760.5,155.4 L760.5,276.0 Z" class="bar"/><rect x="700.7" y="24" width="71.6" height="252" class="hit"><title>32.0K–64.0K tokens · 449 rows (9.7%)</title></rect><text x="736.5" y="145.4" class="caplabel">449</text><text x="736.5" y="294.0" class="xtick" transform="rotate(35 736.5 294.0)">32.0K–64.0K</text><g class="col" tabindex="0"><path d="M784.2,276.0 L784.2,160.7 Q784.2,156.7 788.2,156.7 L828.2,156.7 Q832.2,156.7 832.2,160.7 L832.2,276.0 Z" class="bar"/><rect x="772.4" y="24" width="71.6" height="252" class="hit"><title>64.0K+ tokens · 430 rows (9.3%)</title></rect><text x="808.2" y="150.7" class="caplabel">430</text><text x="808.2" y="294.0" class="xtick" transform="rotate(35 808.2 294.0)">64.0K+</text><text x="56" y="334" class="axis-title">token count per row (binned)</text></svg>
+      </div>
+    </section>
+    
+
+  <section class="panel">
+    <h2>Distribution detail</h2>
+    <p class="sub">Percentiles and dispersion for both fields, in LLM tokens.</p>
+    <table class="ptable"><tr><th>Percentile</th><th>raw_markdown</th><th>ocr_markdown</th></tr><tr><td>p1</td><td>1,426</td><td>374</td></tr><tr><td>p5</td><td>2,093</td><td>689</td></tr><tr><td>p10</td><td>2,527</td><td>914</td></tr><tr><td>p25</td><td>3,285</td><td>1,523</td></tr><tr><td>p50</td><td>4,710</td><td>4,414</td></tr><tr><td>p75</td><td>7,370</td><td>21,366</td></tr><tr><td>p90</td><td>11,395</td><td>59,781</td></tr><tr><td>p95</td><td>13,504</td><td>136,846</td></tr><tr><td>p99</td><td>20,742</td><td>478,813</td></tr><tr class="summ"><td>mean</td><td>6,067</td><td>33,107</td></tr><tr class="summ"><td>std dev</td><td>6,018</td><td>147,511</td></tr><tr class="summ"><td>min</td><td>20</td><td>112</td></tr><tr class="summ"><td>max</td><td>897,094</td><td>5,027,846</td></tr><tr class="summ"><td>CV (std/mean)</td><td>0.99</td><td>4.46</td></tr></table>
+  </section>
+
+  <p class="foot">Counts computed with the deployed model's own tokenizer (verified equal
+  to the live vLLM <code>/tokenize</code> endpoint). These are LLM tokens, not embedding tokens.</p>
+</div>
+<script>
+  function tog() {
+    var r = document.documentElement;
+    var cur = r.getAttribute('data-theme');
+    var next = cur === 'dark' ? 'light' : (cur === 'light' ? 'dark' :
+      (matchMedia('(prefers-color-scheme: dark)').matches ? 'light' : 'dark'));
+    r.setAttribute('data-theme', next);
+  }
+</script>
+</body>
+</html>
