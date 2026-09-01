@@ -1,0 +1,23 @@
+==================================================
+🕷️ SPIDER FLEET DAILY REPORT - 2026-09-01 12:43
+==================================================
+
+🌍 ROOT DOMAINS (seed_websites):
+  - Completed:  884
+  - Processing: 0 (Active workers)
+  - Pending:    0
+  - Total:      884
+
+📄 INTERNAL WEBPAGES (spider_queue):
+  - Completed:  160146
+  - Failed:     10 (Dead links / Timeouts)
+  - Pending:    0
+  - Total Found:160156
+
+💾 EXTRACTED DATA (crawled_data):
+  - Clean Markdown Saved: 160132 pages
+
+⚡ FLEET PERFORMANCE:
+  - Average Speed: 1.30 pages / minute
+  - Est. time to clear current queue: 0.00 hours
+==================================================

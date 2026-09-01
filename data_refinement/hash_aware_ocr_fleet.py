@@ -87,6 +87,16 @@ NUM_GPU_WORKERS = 3
 MAX_PDF_BYTES = 50_000_000
 MAX_HTML_BYTES = 2_000_000
 
+# Incremental skip strategy:
+#   URL_SKIP_MODE = True  -> a PDF URL already present in pdf_ocr_cache is skipped
+#     BEFORE download (no fetch, no OCR). Correct for content-addressed / immutable
+#     PDF URLs (this corpus): a changed document appears at a new URL. This is the
+#     default for routine incremental runs. Seed the cache first with
+#     `seed_pdf_cache_from_existing.py` so already-OCR'd PDFs are skipped.
+#   URL_SKIP_MODE = False -> full content-hash verification: every PDF is
+#     downloaded and SHA-256'd, re-OCR'd only if the bytes changed (`--deep`).
+URL_SKIP_MODE = True
+
 # Kept identical to vision_ocr_fleet so the sweep's NOT LIKE filter still works.
 OCR_HUMAN_TAG = "### [OCR EXTRACTED FROM ATTACHED PDF] ###"
 
@@ -235,6 +245,15 @@ def ensure_cache_table(conn, cache_table: str = None):
             f"CREATE INDEX IF NOT EXISTS idx_{cache_table}_page ON {cache_table} (page_url);"
         )
     conn.commit()
+
+
+def is_url_cached(conn, pdf_url: str, cache_table: str = None) -> bool:
+    """True if this PDF URL is already in the cache. Used by URL_SKIP_MODE to
+    skip immutable/content-addressed PDFs before downloading them."""
+    cache_table = cache_table or CACHE_TABLE
+    with conn.cursor() as cur:
+        cur.execute(f"SELECT 1 FROM {cache_table} WHERE pdf_url = %s;", (pdf_url,))
+        return cur.fetchone() is not None
 
 
 def get_cache_entry(conn, pdf_url: str, cache_table: str = None):
@@ -545,6 +564,12 @@ async def gpu_processing_worker(gpu_queue, http_client, conn):
         page_url, pdf_links = await gpu_queue.get()
         for pdf_url in pdf_links:
             try:
+                # URL-presence gate: skip an already-known (immutable) PDF URL
+                # without downloading or OCRing it.
+                if URL_SKIP_MODE and await asyncio.to_thread(
+                    is_url_cached, conn, pdf_url
+                ):
+                    continue
                 pdf_response = await http_client.get(
                     pdf_url, timeout=25.0, follow_redirects=True
                 )
@@ -628,4 +653,16 @@ async def run_fleet():
 
 
 if __name__ == "__main__":
+    import argparse
+
+    ap = argparse.ArgumentParser(description="Hash-aware / URL-skip PDF OCR fleet.")
+    ap.add_argument(
+        "--deep", action="store_true",
+        help="Full content-hash verification: download+SHA-256 every PDF and "
+             "re-OCR only changed bytes. Default is URL-presence skip (fast, "
+             "correct for immutable/content-addressed PDF URLs).",
+    )
+    args = ap.parse_args()
+    URL_SKIP_MODE = not args.deep
+    print(f"[*] Mode: {'CONTENT-HASH (--deep)' if args.deep else 'URL-SKIP (incremental)'}")
     asyncio.run(run_fleet())
