@@ -2,6 +2,16 @@
 hash_aware_ocr_fleet.py
 =======================
 
+PDF OCR fleet. TWO modes:
+
+  * TARGETED (default, current strategy) -- OCR exactly the PDFs listed in
+    `pdf_ocr_targets` (seeded by `seed_citizen_charter_targets.py`). No page
+    scanning: the PDF URLs are known up front. Each PDF's text is written to
+    `crawled_data_ocr`, keyed by its page URL. Run: `python hash_aware_ocr_fleet.py`.
+
+  * SCAN (legacy, `--scan`) -- discover PDFs by crawling topic-keyword pages,
+    with the restart-safe content-hash / URL-skip change detection below.
+
 Restart-safe PDF OCR fleet with content-hash change detection.
 
 Problem this solves
@@ -79,6 +89,13 @@ DB_CONFIG = {
 CACHE_TABLE = "pdf_ocr_cache"
 CRAWLED_TABLE = "crawled_data"
 OCR_TABLE = "crawled_data_ocr"
+# Fixed work-list of PDF URLs to OCR (current strategy: OCR only these, not a
+# topic-keyword page scan). Seeded by seed_citizen_charter_targets.py.
+TARGETS_TABLE = "pdf_ocr_targets"
+# When True, the targeted fleet re-scans crawled_data for citizen-charter PDFs
+# and appends any new ones to the targets table BEFORE OCRing -- so a fresh
+# re-crawl's new charters get picked up automatically (no separate seed step).
+AUTO_SEED = True
 
 CHECKPOINT_FILE = "data/hash_ocr_checkpoint.txt"
 MAX_PAGES_PER_PDF = 30
@@ -378,6 +395,73 @@ def set_ocr_markdown(conn, page_url: str, ocr_markdown: str,
     conn.commit()
 
 
+# ---- Targeted work-list (the fixed set of PDFs to OCR) --------------------
+def ensure_targets_table(conn, targets_table: str = None):
+    targets_table = targets_table or TARGETS_TABLE
+    with conn.cursor() as cur:
+        cur.execute(
+            f"""
+            CREATE TABLE IF NOT EXISTS {targets_table} (
+                pdf_url    TEXT PRIMARY KEY,
+                page_url   TEXT NOT NULL,
+                status     VARCHAR(20) DEFAULT 'pending',
+                added_at   TIMESTAMPTZ DEFAULT NOW(),
+                updated_at TIMESTAMPTZ DEFAULT NOW()
+            );
+            """
+        )
+        cur.execute(
+            f"CREATE INDEX IF NOT EXISTS idx_{targets_table}_status "
+            f"ON {targets_table} (status);"
+        )
+    conn.commit()
+
+
+def add_target(conn, pdf_url, page_url, targets_table: str = None):
+    targets_table = targets_table or TARGETS_TABLE
+    with conn.cursor() as cur:
+        cur.execute(
+            f"""INSERT INTO {targets_table} (pdf_url, page_url, status)
+                VALUES (%s, %s, 'pending')
+                ON CONFLICT (pdf_url) DO NOTHING;""",
+            (pdf_url, page_url),
+        )
+    conn.commit()
+
+
+def fetch_pending_targets(conn, targets_table: str = None):
+    """Return [(pdf_url, page_url), ...] still needing OCR."""
+    targets_table = targets_table or TARGETS_TABLE
+    with conn.cursor() as cur:
+        cur.execute(
+            f"""SELECT pdf_url, page_url FROM {targets_table}
+                WHERE status IN ('pending', 'processing')
+                ORDER BY added_at;"""
+        )
+        return cur.fetchall()
+
+
+def mark_target(conn, pdf_url, status, targets_table: str = None):
+    targets_table = targets_table or TARGETS_TABLE
+    with conn.cursor() as cur:
+        cur.execute(
+            f"UPDATE {targets_table} SET status = %s, updated_at = NOW() "
+            f"WHERE pdf_url = %s;",
+            (status, pdf_url),
+        )
+    conn.commit()
+
+
+def reset_stale_targets(conn, targets_table: str = None):
+    """Any 'processing' rows left by a crashed run go back to 'pending'."""
+    targets_table = targets_table or TARGETS_TABLE
+    with conn.cursor() as cur:
+        cur.execute(
+            f"UPDATE {targets_table} SET status = 'pending' WHERE status = 'processing';"
+        )
+    conn.commit()
+
+
 def apply_ocr_block(conn, page_url, pdf_url, ocr_text,
                     ocr_table: str = None, crawled_table: str = None):
     """Read-modify-write `crawled_data_ocr.ocr_markdown`, replacing this PDF's
@@ -652,17 +736,120 @@ async def run_fleet():
     print("\n🎉 Hash-Aware OCR Fleet run complete.")
 
 
+# ==========================================
+# 8. TARGETED FLEET  (current strategy: OCR a fixed PDF list)
+# ==========================================
+async def targeted_ocr_worker(target_queue, http_client, conn):
+    """Download + OCR one target PDF, write it to crawled_data_ocr (keyed by its
+    page_url), and mark the target done/failed. No page scouting -- the PDF URLs
+    are already known from the targets table."""
+    while True:
+        pdf_url, page_url = await target_queue.get()
+        try:
+            resp = await http_client.get(pdf_url, timeout=25.0, follow_redirects=True)
+            if resp.status_code != 200:
+                await asyncio.to_thread(mark_target, conn, pdf_url, "failed")
+            else:
+                pdf_bytes = resp.content
+                del resp
+                action = await handle_pdf(conn, page_url, pdf_url, pdf_bytes, vision_ocr)
+                del pdf_bytes
+                await asyncio.to_thread(
+                    mark_target, conn, pdf_url,
+                    "failed" if action == "invalid" else "done",
+                )
+        except Exception:
+            await asyncio.to_thread(mark_target, conn, pdf_url, "failed")
+        finally:
+            pbar.update(1)
+            target_queue.task_done()
+            gc.collect()
+
+
+async def run_targeted_fleet():
+    """OCR exactly the PDFs listed in TARGETS_TABLE (current strategy)."""
+    global pbar
+    print("🎯 Initializing TARGETED PDF OCR Fleet (fixed PDF work-list)...")
+
+    setup_conn = psycopg2.connect(**DB_CONFIG)
+    ensure_cache_table(setup_conn)
+    ensure_ocr_table(setup_conn)
+    ensure_targets_table(setup_conn)
+
+    # Auto-refresh the work-list: pick up citizen-charter PDFs discovered by the
+    # latest re-crawl and append the new ones (idempotent; existing 'done'
+    # targets are left as-is). Lazy import avoids a circular import.
+    if AUTO_SEED:
+        try:
+            import seed_citizen_charter_targets as _seeder
+            print("🔄 Auto-seeding targets from latest crawl (new citizen-charter PDFs)...")
+            _seeder.run(dry_run=False)
+        except Exception as e:
+            print(f"[!] Auto-seed skipped ({e.__class__.__name__}: {e}). "
+                  f"Proceeding with existing targets.")
+
+    reset_stale_targets(setup_conn)
+    targets = fetch_pending_targets(setup_conn)
+    setup_conn.close()
+
+    print(f"📊 Pending target PDFs: {len(targets)}")
+    if not targets:
+        print("✅ No pending target PDFs. Nothing to do.")
+        return
+
+    target_queue = asyncio.Queue()
+    for t in targets:
+        target_queue.put_nowait(t)
+
+    gpu_conns = [psycopg2.connect(**DB_CONFIG) for _ in range(NUM_GPU_WORKERS)]
+    limits = httpx.Limits(max_connections=200, max_keepalive_connections=50)
+    pbar = tqdm(total=len(targets), desc="Targeted OCR")
+
+    print(f"⚡ Launching: {NUM_GPU_WORKERS} GPU OCR workers...")
+    async with httpx.AsyncClient(verify=False, limits=limits, follow_redirects=True) as http_client:
+        tasks = [
+            asyncio.create_task(targeted_ocr_worker(target_queue, http_client, gpu_conns[i]))
+            for i in range(NUM_GPU_WORKERS)
+        ]
+        await target_queue.join()
+        for t in tasks:
+            t.cancel()
+
+    for c in gpu_conns:
+        c.close()
+    pbar.close()
+    print("\n🎉 Targeted OCR Fleet run complete.")
+
+
 if __name__ == "__main__":
     import argparse
 
-    ap = argparse.ArgumentParser(description="Hash-aware / URL-skip PDF OCR fleet.")
+    ap = argparse.ArgumentParser(
+        description="PDF OCR fleet. Default: OCR the fixed target list "
+                    "(pdf_ocr_targets). Use --scan for the legacy topic-keyword "
+                    "page scan."
+    )
+    ap.add_argument(
+        "--scan", action="store_true",
+        help="Legacy mode: discover PDFs by scanning topic-keyword pages "
+             "instead of using the fixed target work-list.",
+    )
     ap.add_argument(
         "--deep", action="store_true",
-        help="Full content-hash verification: download+SHA-256 every PDF and "
-             "re-OCR only changed bytes. Default is URL-presence skip (fast, "
-             "correct for immutable/content-addressed PDF URLs).",
+        help="(--scan only) full content-hash verification instead of URL-skip.",
+    )
+    ap.add_argument(
+        "--no-seed", action="store_true",
+        help="Targeted mode: skip the auto-seed refresh; OCR only what's already "
+             "in pdf_ocr_targets.",
     )
     args = ap.parse_args()
-    URL_SKIP_MODE = not args.deep
-    print(f"[*] Mode: {'CONTENT-HASH (--deep)' if args.deep else 'URL-SKIP (incremental)'}")
-    asyncio.run(run_fleet())
+    if args.scan:
+        URL_SKIP_MODE = not args.deep
+        print(f"[*] Legacy scan mode: {'CONTENT-HASH' if args.deep else 'URL-SKIP'}")
+        asyncio.run(run_fleet())
+    else:
+        AUTO_SEED = not args.no_seed
+        print(f"[*] Targeted mode: OCR the PDFs in pdf_ocr_targets "
+              f"(auto-seed {'OFF' if args.no_seed else 'ON'}).")
+        asyncio.run(run_targeted_fleet())

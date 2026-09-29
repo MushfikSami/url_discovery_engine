@@ -1,139 +1,145 @@
 # Data Refinement
 
-Post-crawl enrichment for the GovBD dataset. The crawler fleet
-(`crawler_with_router/`) fills `crawled_data.raw_markdown` with HTML converted to
-markdown. This stage augments those rows with **OCR text extracted from attached
-PDFs**, extracts gazettes, checks OCR quality, and generates the structured
-schema for the final dataset.
+Post-crawl enrichment for the GovBD dataset. The crawler
+(`crawler_with_router/`) fills `crawled_data.raw_markdown` with each page's HTML
+converted to markdown. This stage extracts **OCR text from the PDFs attached to
+those pages**, stores it in a **separate table** (`crawled_data_ocr`), and builds
+the structured dataset.
 
-All scripts talk to the same PostgreSQL database (`gov_spider_db`) and OCR runs
-against a local vLLM server (`http://localhost:5000/v1`, model `qwen36`).
+- **Database:** PostgreSQL `gov_spider_db`.
+- **OCR model:** Qwen3.6 served by vLLM at `http://localhost:5000/v1` (model
+  name `qwen36`).
+- **Runtime:** use the `Bionotes_project` conda env — it has the full dependency
+  set (`crawl4ai`, `httpx`, `bs4`, `openai`, `pdf2image`, `psycopg2`, `tqdm`,
+  `transformers`):
+  `/home/vpatest/miniconda3/envs/Bionotes_project/bin/python <script>.py`
 
-## Pipeline at a glance
+---
+
+## Current OCR strategy: targeted citizen-charter PDFs
+
+OCR is **targeted**, not a blanket scan. We OCR only the PDFs on
+**citizen-charter** pages (URLs matching `%citizen%charter%` — ~1,709 distinct
+PDFs). Those PDF URLs live in a work-list table, `pdf_ocr_targets`, and the fleet
+OCRs whatever is `pending` there.
 
 ```
-crawled_data (HTML→markdown)
+crawled_data (page markdown, incl. PDF links)
       │
-      ├── vision_ocr_fleet.py ........ OCR every targeted page's PDFs (first pass)
-      ├── sweep_stragglers_fleet.py .. re-run only rows still missing OCR
-      ├── hash_aware_ocr_fleet.py .... restart-safe: OCR only PDFs whose content changed
-      │
+      │  seed_citizen_charter_targets.py   (also auto-run by the fleet)
       ▼
-crawled_data.raw_markdown  (HTML markdown + appended OCR blocks)
+pdf_ocr_targets (pdf_url → page_url, status)     ← the work-list
       │
-      ├── extract_gazettes.py ........ pull gazette PDFs out into files
-      ├── check_ocr_quality.py ....... report OCR/gazette coverage
-      └── schema_generator.py ........ build the structured Master Dataset
+      │  hash_aware_ocr_fleet.py   (download → OCR via vLLM)
+      ▼
+crawled_data_ocr (url, ocr_markdown)             ← OCR output, keyed by PAGE url
 ```
 
-Only pages matching the service **topic keywords** (NID, Birth/Death, Trade
-License, Land, Passport, Vehicle/License, Utility Bills, Health) are targeted, so
-GPU time is spent on high-value documents.
+**OCR text is NOT written into `crawled_data.raw_markdown`.** It goes to its own
+table `crawled_data_ocr`, keyed by the page URL. Each PDF's text is wrapped in
+URL-keyed markers so re-runs replace a PDF's block in place instead of
+duplicating it:
+
+```
+<!-- OCR-PDF-START https://…/doc.pdf -->
+### [OCR EXTRACTED FROM ATTACHED PDF] ###
+Document Source: https://…/doc.pdf
+<extracted text>
+<!-- OCR-PDF-END https://…/doc.pdf -->
+```
+
+### Monthly workflow (2 commands)
+
+```bash
+# 1. Re-crawl the gov sites (updates crawled_data with new/changed pages)
+cd ../crawler_with_router && bash launch_fleet.sh
+
+# 2. OCR: auto-seeds any newly-discovered charter PDFs, then OCRs the pending ones
+cd ../data_refinement && python hash_aware_ocr_fleet.py
+```
+
+Step 2 **auto-seeds** first: it re-scans `crawled_data` for citizen-charter PDFs
+and appends new ones to `pdf_ocr_targets` (idempotent — existing `done` targets
+are left alone), then OCRs everything `pending` and marks each `done`/`failed`.
+Because the PDF URLs are content-addressed (immutable), a *changed* charter
+appears at a *new* URL → new target → OCR'd; unchanged ones are never redone.
+
+Flags: `--no-seed` (skip the auto-seed refresh) · `--scan` (legacy mode, below).
+
+---
 
 ## Scripts
 
+### OCR (current)
 | File | Purpose |
 |------|---------|
-| `vision_ocr_fleet.py` | First-pass OCR fleet. For every targeted page it scouts PDF links, downloads them, OCRs each page via vLLM, and appends the text to `raw_markdown`. Tracks progress with a URL checkpoint file. |
-| `sweep_stragglers_fleet.py` | Recovery pass. Re-targets only rows that still lack the `[OCR EXTRACTED FROM ATTACHED PDF]` tag (dropped by timeouts/skips in the first pass). |
-| `hash_aware_ocr_fleet.py` | **Restart-safe OCR with content-hash change detection** (see below). Re-runs skip PDFs whose bytes are unchanged. |
-| `test_hash_aware_ocr.py` | Test suite for the hash-aware fleet. Runs with a stub OCR (no GPU) against throwaway tables (production data untouched). |
-| `extract_gazettes.py` | Downloads gazette PDFs referenced in the data and saves them to `Extracted_Gazettes/`. |
-| `check_ocr_quality.py` | Reports how many rows/PDFs/gazettes have OCR content — quick progress monitor. |
-| `preflight_url_check.py` | Estimates the OCR workload per topic before launching a fleet. |
-| `schema_generator.py` | Uses vLLM to turn enriched markdown into the structured `Master_Dataset_Enhanced.csv`. |
+| `hash_aware_ocr_fleet.py` | **The OCR fleet.** Default = *targeted* mode: auto-seed → OCR the `pending` PDFs in `pdf_ocr_targets` → write to `crawled_data_ocr`. `--scan` runs the legacy topic-keyword page crawl with content-hash / URL-skip change detection. |
+| `seed_citizen_charter_targets.py` | Populate `pdf_ocr_targets` with citizen-charter PDFs found in `crawled_data`. Idempotent; run standalone or let the fleet auto-run it. |
+| `migrate_split_ocr_table.py` | One-time migration that split legacy OCR text out of `crawled_data.raw_markdown` into `crawled_data_ocr`. |
+| `seed_pdf_cache_from_existing.py` | Rebuild `pdf_ocr_cache` from already-OCR'd text (URL-skip seeding) — used by the legacy `--scan` incremental flow. |
+
+### Legacy OCR (superseded, kept for reference / fallback)
+| File | Purpose |
+|------|---------|
+| `vision_ocr_fleet.py` | Original first-pass OCR fleet; scanned topic-keyword pages and appended OCR into `raw_markdown`. |
+| `sweep_stragglers_fleet.py` | Recovery pass for rows the first pass dropped. |
+
+### Analysis / dataset
+| File | Purpose |
+|------|---------|
+| `check_ocr_quality.py` | Reports OCR/gazette coverage — quick progress monitor. |
+| `preflight_url_check.py` | Estimates OCR workload per topic before a run. |
+| `extract_gazettes.py` | Downloads gazette PDFs into `Extracted_Gazettes/`. |
+| `schema_generator.py` | Uses vLLM to build the structured `Master_Dataset_Enhanced.csv`. |
+| `rnd_token_stats.py` | R&D: per-row LLM token-size distribution (raw_markdown vs ocr_markdown) using the exact Qwen tokenizer; writes `rnd_token_stats.json`. |
+| `rnd_token_report.py` | Renders that JSON into `rnd_token_report.html` (charts + stats). |
+
+### Tests (no GPU/vLLM needed; throwaway tables, production untouched)
+| File | Covers |
+|------|--------|
+| `test_hash_aware_ocr.py` | Hash logic, change detection, OCR-table separation, the split migration. |
+| `test_seed_pdf_cache.py` | `pdf_ocr_cache` seeding + URL-skip gate. |
+| `test_targeted_ocr.py` | Target extraction, `pdf_ocr_targets` lifecycle, end-to-end target→OCR. |
 | `test_vision_ocr.py` | Single-PDF smoke test for the vLLM OCR path. |
 
-## Hash-Aware OCR (restart-safe re-crawling)
+Run a suite: `python test_targeted_ocr.py` (etc.). All use a stub OCR and
+`*_test_<pid>` tables.
 
-`hash_aware_ocr_fleet.py` solves a problem in the older fleets: on restart they
-track progress by URL only, so an unchanged PDF gets re-OCR'd from scratch — and
-because they blindly append, the OCR text is duplicated into `raw_markdown`.
+---
 
-This fleet keeps a per-PDF **SHA-256 content hash** in a new `pdf_ocr_cache`
-table. On every run each PDF is downloaded, hashed, and compared:
+## Tables
 
-| Situation | Action | OCR runs? |
-|-----------|--------|-----------|
-| New PDF (not in cache) | OCR, cache the text + hash, append block | ✅ |
-| Hash **unchanged** | Skip | ❌ |
-| Hash **changed** | Re-OCR, replace that PDF's block in place, update cache | ✅ |
-| Hash unchanged but block missing (row was re-crawled) | Restore text from cache | ❌ |
+| Table | Role |
+|-------|------|
+| `crawled_data` | Page content (`raw_markdown`) — written by the crawler, read here. |
+| `crawled_data_ocr` | `(url, ocr_markdown, updated_at)` — OCR output, keyed by page URL. |
+| `pdf_ocr_targets` | `(pdf_url PK, page_url, status)` — the fixed OCR work-list (`pending`/`processing`/`done`/`failed`). |
+| `pdf_ocr_cache` | `(pdf_url PK, page_url, pdf_hash, ocr_text, …)` — per-PDF hash cache; skips re-OCR of unchanged PDFs. |
 
-### Where the OCR data goes
+---
 
-Same row, same column — it does **not** create new rows. The OCR text is appended
-to the existing `crawled_data.raw_markdown` (the HTML-derived markdown is kept),
-matched on the **page URL**. Each PDF's text is wrapped in URL-keyed markers so a
-re-run replaces its block instead of duplicating it:
+## Legacy `--scan` mode (content-hash change detection)
 
-```
-<existing HTML → markdown content>
+`python hash_aware_ocr_fleet.py --scan` runs the original approach: crawl the
+topic-keyword pages (NID, Birth/Death, Trade License, Land, Passport,
+Vehicle/License, Utility Bills, Health), discover PDF links, and OCR them with
+change detection:
 
-<!-- OCR-PDF-START https://site.gov.bd/doc.pdf -->
-### [OCR EXTRACTED FROM ATTACHED PDF] ###
-Document Source: https://site.gov.bd/doc.pdf
-<extracted text>
-<!-- OCR-PDF-END https://site.gov.bd/doc.pdf -->
-```
+| Situation | Action |
+|-----------|--------|
+| New PDF | OCR, cache hash + text |
+| Unchanged (URL already cached, or hash match) | skip |
+| Changed bytes (`--deep`) | re-OCR, replace block |
 
-The row must already exist (the crawler writes it first); if it's missing, the
-PDF is skipped rather than inserted.
+`--deep` forces full content-hash verification (download + SHA-256 every PDF)
+instead of the default URL-presence skip.
 
-### `pdf_ocr_cache` table
-
-Auto-created on first run.
-
-```sql
-pdf_ocr_cache (
-    pdf_url      TEXT PRIMARY KEY,
-    page_url     TEXT,
-    pdf_hash     TEXT NOT NULL,   -- SHA-256 of the raw PDF bytes
-    ocr_text     TEXT,            -- cached extraction, reused on reheal
-    last_checked TIMESTAMPTZ,
-    updated_at   TIMESTAMPTZ
-)
-```
-
-## Quick start
-
-```bash
-# 1. Estimate the workload (optional)
-python preflight_url_check.py
-
-# 2a. First full OCR pass
-python vision_ocr_fleet.py
-
-# 2b. OR restart-safe pass (recommended for re-crawls — skips unchanged PDFs)
-python hash_aware_ocr_fleet.py
-
-# 3. Recover any dropped rows
-python sweep_stragglers_fleet.py
-
-# 4. Check coverage
-python check_ocr_quality.py
-
-# 5. Build the structured dataset
-python schema_generator.py
-```
-
-## Testing
-
-The hash-aware fleet ships with a full test suite. It uses a stub OCR (no GPU or
-vLLM required) and throwaway `*_test_<pid>` tables, so it never touches the
-~140k-row production `crawled_data`:
-
-```bash
-python test_hash_aware_ocr.py
-```
-
-Covers hash determinism/sensitivity, unchanged→skip, changed→re-OCR + block
-replacement (no duplication), new→OCR-once, reheal-without-OCR, invalid/oversize
-rejection, empty-OCR handling, and multi-PDF isolation on one page.
+---
 
 ## Dependencies
 
-- Python 3.10+ (tested on 3.12)
-- `psycopg2`, `httpx`, `beautifulsoup4`, `openai`, `pdf2image`, `tqdm`
-- A running vLLM server for OCR / schema generation
-- `poppler-utils` (for `pdf2image` rasterization)
+- Python 3.10+ (tested on 3.12) via the `Bionotes_project` conda env.
+- `psycopg2`, `httpx`, `beautifulsoup4`, `openai`, `pdf2image`, `tqdm`,
+  `transformers` (for the R&D tokenizer).
+- A running vLLM server (`qwen36`) for OCR / schema generation.
+- `poppler-utils` (for `pdf2image` rasterization).
