@@ -60,3 +60,4 @@ data_refinement/rnd_report_*.png
 # ===== Large binaries / archives =====
 *.gz
 *.xapk
+

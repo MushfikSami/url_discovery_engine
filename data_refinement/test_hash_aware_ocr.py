@@ -317,20 +317,23 @@ class TestHandlePdfDB(unittest.TestCase):
         self.assertEqual(self.ocr_calls, 0)
         self.assertIsNone(fleet.get_cache_entry(self.conn, self.pdf_url, self.cache_table))
 
-    def test_empty_ocr_still_records_hash(self):
+    def test_empty_ocr_signals_and_is_not_cached(self):
+        """Empty OCR must NOT be recorded as success -- it returns 'ocr_empty'
+        and is not cached, so it can be retried (guards against a vLLM blip
+        silently marking a PDF done with no text)."""
         async def empty_ocr(pdf_bytes):
             self.ocr_calls += 1
             return "   "
 
         action = self._run(fleet.handle_pdf(self.conn, self.page_url, self.pdf_url, PDF_A, empty_ocr))
-        self.assertEqual(action, "ocr")
+        self.assertEqual(action, "ocr_empty")
         cached = fleet.get_cache_entry(self.conn, self.pdf_url, self.cache_table)
-        self.assertIsNotNone(cached, "Hash must be recorded even for empty OCR")
-        self.assertEqual(cached[0], fleet.compute_pdf_hash(PDF_A))
-        # Restart: identical bytes -> skip, no second OCR of the unreadable PDF.
-        action2 = self._run(fleet.handle_pdf(self.conn, self.page_url, self.pdf_url, PDF_A, empty_ocr))
-        self.assertEqual(action2, "skip")
-        self.assertEqual(self.ocr_calls, 1)
+        self.assertIsNone(cached, "Empty OCR must not be cached")
+        # No OCR block written to the OCR table either.
+        self.assertFalse(fleet.block_present(self._ocr_markdown(), self.pdf_url))
+        # Re-run: since nothing was cached, OCR is attempted again (retryable).
+        self._run(fleet.handle_pdf(self.conn, self.page_url, self.pdf_url, PDF_A, empty_ocr))
+        self.assertEqual(self.ocr_calls, 2)
 
     def test_multiple_pdfs_same_page(self):
         pdf_url2 = "http://gov.bd/doc2.pdf"

@@ -19,9 +19,16 @@ the structured dataset.
 ## Current OCR strategy: targeted citizen-charter PDFs
 
 OCR is **targeted**, not a blanket scan. We OCR only the PDFs on
-**citizen-charter** pages (URLs matching `%citizen%charter%` — ~1,709 distinct
-PDFs). Those PDF URLs live in a work-list table, `pdf_ocr_targets`, and the fleet
+**citizen-charter** pages (URLs matching `%citizen%charter%`), **filtered by
+content freshness**: a PDF is kept only if it appears on a page whose
+`কনটেন্টটি শেষ হাল-নাগাদ করা হয়েছে:` ("content last updated") date is on/after
+`CONTENT_DATE_CUTOFF` (currently **2024-09-01**). Pages with no parseable content
+date are excluded. This trims the raw ~1,709 charter PDFs to ~1,358. The
+surviving PDF URLs live in a work-list table, `pdf_ocr_targets`, and the fleet
 OCRs whatever is `pending` there.
+
+> Note: the filter uses the **`কনটেন্টটি`** (content) date, *not* the volatile
+> **`সাইটটি`** (site) timestamp that changes on every page render.
 
 ```
 crawled_data (page markdown, incl. PDF links)
@@ -58,11 +65,13 @@ cd ../crawler_with_router && bash launch_fleet.sh
 cd ../data_refinement && python hash_aware_ocr_fleet.py
 ```
 
-Step 2 **auto-seeds** first: it re-scans `crawled_data` for citizen-charter PDFs
-and appends new ones to `pdf_ocr_targets` (idempotent — existing `done` targets
-are left alone), then OCRs everything `pending` and marks each `done`/`failed`.
+Step 2 **auto-seeds** first: it re-scans `crawled_data` for citizen-charter PDFs,
+applies the content-date filter (≥ `CONTENT_DATE_CUTOFF`), and appends new
+qualifying ones to `pdf_ocr_targets` (idempotent — existing `done` targets are
+left alone), then OCRs everything `pending` and marks each `done`/`failed`.
 Because the PDF URLs are content-addressed (immutable), a *changed* charter
 appears at a *new* URL → new target → OCR'd; unchanged ones are never redone.
+Change the cutoff via `CONTENT_DATE_CUTOFF` in `seed_citizen_charter_targets.py`.
 
 Flags: `--no-seed` (skip the auto-seed refresh) · `--scan` (legacy mode, below).
 

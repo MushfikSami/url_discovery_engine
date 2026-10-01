@@ -51,6 +51,35 @@ class TestExtract(unittest.TestCase):
         self.assertEqual(seeder.extract_pdf_page_map([]), {})
         self.assertEqual(seeder.extract_pdf_page_map([("u", "no pdfs here")]), {})
 
+    def test_parse_content_date(self):
+        import datetime
+        md = "... জমা দিন  কনটেন্টটি শেষ হাল-নাগাদ করা হয়েছে: মঙ্গলবার, ২৫ আগস্ট, ২০২৬ এ ০৮:০০:০০"
+        self.assertEqual(seeder.parse_content_date(md), datetime.date(2026, 8, 25))
+        old = "কনটেন্টটি শেষ হাল-নাগাদ করা হয়েছে: বুধবার, ১৫ মার্চ, ২০২৩ এ ১০:০০:০০"
+        self.assertEqual(seeder.parse_content_date(old), datetime.date(2023, 3, 15))
+        # missing phrase / unparseable -> None
+        self.assertIsNone(seeder.parse_content_date("no date phrase here"))
+        self.assertIsNone(seeder.parse_content_date(None))
+        # the volatile SITE timestamp must NOT be picked up as the content date
+        self.assertIsNone(seeder.parse_content_date(
+            "সাইটটি শেষ হাল-নাগাদ করা হয়েছে: সোমবার, ২৮ সেপ্টেম্বর, ২০২৬ এ ২০:১৫:৩৫"))
+
+    def test_extract_with_date_filter(self):
+        import datetime
+        cutoff = datetime.date(2024, 9, 1)
+        recent = ("https://x/recent",
+                  "কনটেন্টটি শেষ হাল-নাগাদ করা হয়েছে: সোমবার, ৩০ সেপ্টেম্বর, ২০২৫ এ ১:০০:০০ "
+                  "[a](https://s/recent.pdf)")
+        old = ("https://x/old",
+               "কনটেন্টটি শেষ হাল-নাগাদ করা হয়েছে: বুধবার, ১৫ মার্চ, ২০২৩ এ ১:০০:০০ "
+               "[b](https://s/old.pdf)")
+        undated = ("https://x/undated", "no content date [c](https://s/undated.pdf)")
+        m = seeder.extract_pdf_page_map([recent, old, undated], min_date=cutoff)
+        self.assertEqual(set(m), {"https://s/recent.pdf"})  # only the recent page's PDF
+        # without a cutoff, all three come through
+        m2 = seeder.extract_pdf_page_map([recent, old, undated])
+        self.assertEqual(len(m2), 3)
+
 
 @unittest.skipUnless(DB_UP, "PostgreSQL not reachable; skipping DB tests")
 class TestTargetsDB(unittest.TestCase):
@@ -108,6 +137,30 @@ class TestTargetsDB(unittest.TestCase):
         fleet.reset_stale_targets(self.conn, self.targets)
         pend = fleet.fetch_pending_targets(self.conn, self.targets)
         self.assertEqual([p[0] for p in pend], ["https://s/b.pdf"])
+
+    def test_transient_failure_requeues_until_budget(self):
+        """A transient failure requeues to 'pending' until MAX_OCR_ATTEMPTS, then
+        'failed' -- so an outage can't permanently burn the work-list."""
+        pdf = "https://s/flaky.pdf"
+        fleet.add_target(self.conn, pdf, self.page, self.targets)
+        orig = fleet.MAX_OCR_ATTEMPTS
+        fleet.MAX_OCR_ATTEMPTS = 3
+        try:
+            s1 = fleet.record_target_failure(self.conn, pdf, permanent=False, targets_table=self.targets)
+            self.assertEqual(s1, "pending")
+            s2 = fleet.record_target_failure(self.conn, pdf, permanent=False, targets_table=self.targets)
+            self.assertEqual(s2, "pending")
+            s3 = fleet.record_target_failure(self.conn, pdf, permanent=False, targets_table=self.targets)
+            self.assertEqual(s3, "failed")  # 3rd attempt hits the budget
+        finally:
+            fleet.MAX_OCR_ATTEMPTS = orig
+
+    def test_permanent_failure_is_terminal(self):
+        pdf = "https://s/notapdf"
+        fleet.add_target(self.conn, pdf, self.page, self.targets)
+        s = fleet.record_target_failure(self.conn, pdf, permanent=True, targets_table=self.targets)
+        self.assertEqual(s, "failed")
+        self.assertEqual(fleet.fetch_pending_targets(self.conn, self.targets), [])
 
     def test_end_to_end_target_ocr(self):
         """Simulate the targeted worker's core: handle_pdf on a target PDF writes

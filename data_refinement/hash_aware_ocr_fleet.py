@@ -97,11 +97,18 @@ TARGETS_TABLE = "pdf_ocr_targets"
 # re-crawl's new charters get picked up automatically (no separate seed step).
 AUTO_SEED = True
 
+# Transient errors (download failure, vLLM blip, empty OCR) requeue a target as
+# 'pending' up to this many attempts before it is marked terminally 'failed'.
+# This stops a one-off outage (e.g. power cut before vLLM is back) from burning
+# the whole work-list to 'failed'.
+MAX_OCR_ATTEMPTS = 3
+
 CHECKPOINT_FILE = "data/hash_ocr_checkpoint.txt"
-MAX_PAGES_PER_PDF = 30
+# No per-PDF page cap: OCR every page of the document. (A 50MB byte-size shield,
+# MAX_PDF_BYTES, still guards against pathologically large files.)
 NUM_NETWORK_WORKERS = 50
 NUM_GPU_WORKERS = 3
-MAX_PDF_BYTES = 50_000_000
+MAX_PDF_BYTES = 250_000_000
 MAX_HTML_BYTES = 2_000_000
 
 # Incremental skip strategy:
@@ -405,11 +412,14 @@ def ensure_targets_table(conn, targets_table: str = None):
                 pdf_url    TEXT PRIMARY KEY,
                 page_url   TEXT NOT NULL,
                 status     VARCHAR(20) DEFAULT 'pending',
+                attempts   INT DEFAULT 0,
                 added_at   TIMESTAMPTZ DEFAULT NOW(),
                 updated_at TIMESTAMPTZ DEFAULT NOW()
             );
             """
         )
+        # Idempotent add for tables created before `attempts` existed.
+        cur.execute(f"ALTER TABLE {targets_table} ADD COLUMN IF NOT EXISTS attempts INT DEFAULT 0;")
         cur.execute(
             f"CREATE INDEX IF NOT EXISTS idx_{targets_table}_status "
             f"ON {targets_table} (status);"
@@ -460,6 +470,52 @@ def reset_stale_targets(conn, targets_table: str = None):
             f"UPDATE {targets_table} SET status = 'pending' WHERE status = 'processing';"
         )
     conn.commit()
+
+
+def record_target_failure(conn, pdf_url, permanent=False, targets_table: str = None):
+    """Handle a target that didn't OCR.
+
+    permanent=True  -> terminal 'failed' (e.g. the bytes aren't a valid PDF).
+    permanent=False -> transient (download/vLLM error, empty OCR): increment
+      attempts and requeue as 'pending' until MAX_OCR_ATTEMPTS is hit, then
+      'failed'. This is what makes a power-cut / outage self-healing instead of
+      burning the whole work-list to 'failed'.
+
+    Returns the new status.
+    """
+    targets_table = targets_table or TARGETS_TABLE
+    with conn.cursor() as cur:
+        if permanent:
+            cur.execute(
+                f"UPDATE {targets_table} SET status='failed', attempts=attempts+1, "
+                f"updated_at=NOW() WHERE pdf_url=%s;",
+                (pdf_url,),
+            )
+            new_status = "failed"
+        else:
+            cur.execute(
+                f"""UPDATE {targets_table}
+                    SET attempts = attempts + 1,
+                        status = CASE WHEN attempts + 1 >= %s THEN 'failed' ELSE 'pending' END,
+                        updated_at = NOW()
+                    WHERE pdf_url = %s
+                    RETURNING status;""",
+                (MAX_OCR_ATTEMPTS, pdf_url),
+            )
+            row = cur.fetchone()
+            new_status = row[0] if row else "pending"
+    conn.commit()
+    return new_status
+
+
+def vllm_healthy(timeout=8.0):
+    """True if the vLLM OCR server answers. Checked at fleet startup so we never
+    process (and mass-fail) the work-list while the model is down."""
+    try:
+        r = httpx.get(f"{VLLM_API_BASE}/models", timeout=timeout)
+        return r.status_code == 200
+    except Exception:
+        return False
 
 
 def apply_ocr_block(conn, page_url, pdf_url, ocr_text,
@@ -532,11 +588,10 @@ async def handle_pdf(conn, page_url, pdf_url, pdf_bytes, ocr_func):
     # action == "ocr": content is new or changed.
     ocr_text = await ocr_func(pdf_bytes)
     if not ocr_text or not ocr_text.strip():
-        # Still record the hash so we don't keep re-OCRing an unreadable PDF.
-        await asyncio.to_thread(
-            upsert_cache_entry, conn, pdf_url, page_url, new_hash, ""
-        )
-        return "ocr"
+        # No text produced (vLLM blip / unreadable page). Do NOT cache and do NOT
+        # mark success -- signal the caller so it can retry (targeted mode) rather
+        # than silently recording an empty result as done.
+        return "ocr_empty"
     await asyncio.to_thread(apply_ocr_block, conn, page_url, pdf_url, ocr_text)
     await asyncio.to_thread(
         upsert_cache_entry, conn, pdf_url, page_url, new_hash, ocr_text
@@ -584,12 +639,11 @@ async def perform_ocr(base64_image):
 
 
 async def vision_ocr(pdf_bytes: bytes) -> str:
-    """Production OCR: rasterize the PDF and OCR each page via vLLM."""
+    """Production OCR: rasterize the WHOLE PDF and OCR every page via vLLM."""
     extracted_text = ""
     try:
-        pages = await asyncio.to_thread(
-            convert_from_bytes, pdf_bytes, first_page=1, last_page=MAX_PAGES_PER_PDF
-        )
+        # No page cap -- convert all pages of the document.
+        pages = await asyncio.to_thread(convert_from_bytes, pdf_bytes)
         for i, page_image in enumerate(pages):
             base64_img = image_to_base64(page_image)
             page_text = await perform_ocr(base64_img)
@@ -748,18 +802,24 @@ async def targeted_ocr_worker(target_queue, http_client, conn):
         try:
             resp = await http_client.get(pdf_url, timeout=25.0, follow_redirects=True)
             if resp.status_code != 200:
-                await asyncio.to_thread(mark_target, conn, pdf_url, "failed")
+                # HTTP problem -> transient, retry later.
+                await asyncio.to_thread(record_target_failure, conn, pdf_url, False)
             else:
                 pdf_bytes = resp.content
                 del resp
                 action = await handle_pdf(conn, page_url, pdf_url, pdf_bytes, vision_ocr)
                 del pdf_bytes
-                await asyncio.to_thread(
-                    mark_target, conn, pdf_url,
-                    "failed" if action == "invalid" else "done",
-                )
+                if action == "invalid":
+                    # Not a valid PDF -> permanent failure, don't retry.
+                    await asyncio.to_thread(record_target_failure, conn, pdf_url, True)
+                elif action == "ocr_empty":
+                    # No text produced (vLLM blip / blank page) -> retry.
+                    await asyncio.to_thread(record_target_failure, conn, pdf_url, False)
+                else:  # "ocr" | "reheal" | "skip" -> real text present
+                    await asyncio.to_thread(mark_target, conn, pdf_url, "done")
         except Exception:
-            await asyncio.to_thread(mark_target, conn, pdf_url, "failed")
+            # Download/connection/vLLM exception -> transient, retry later.
+            await asyncio.to_thread(record_target_failure, conn, pdf_url, False)
         finally:
             pbar.update(1)
             target_queue.task_done()
@@ -770,6 +830,13 @@ async def run_targeted_fleet():
     """OCR exactly the PDFs listed in TARGETS_TABLE (current strategy)."""
     global pbar
     print("🎯 Initializing TARGETED PDF OCR Fleet (fixed PDF work-list)...")
+
+    # Guard: never process the work-list while the OCR model is down -- otherwise
+    # every PDF fails and (previously) got burned to 'failed'. Abort cleanly.
+    if not vllm_healthy():
+        print(f"[!] vLLM OCR server at {VLLM_API_BASE} is not responding. "
+              f"Aborting so targets are not mass-failed. Start qwen36 and re-run.")
+        return
 
     setup_conn = psycopg2.connect(**DB_CONFIG)
     ensure_cache_table(setup_conn)
